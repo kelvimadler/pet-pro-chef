@@ -70,24 +70,24 @@ export default function Reports() {
     value: count
   }));
 
-  // Lazy load Recharts components to avoid build issues
-  const RechartsComponents = lazy(() => 
-    import('recharts').then(module => ({
-      default: {
-        BarChart: module.BarChart,
-        Bar: module.Bar,
-        XAxis: module.XAxis,
-        YAxis: module.YAxis,
-        CartesianGrid: module.CartesianGrid,
-        Tooltip: module.Tooltip,
-        ResponsiveContainer: module.ResponsiveContainer,
-        PieChart: module.PieChart,
-        Pie: module.Pie,
-        Cell: module.Cell
-      }
-    })).catch(() => ({
-      default: null
-    }))
+  // Simple chart component
+  const SimpleBarChart = ({ data }: { data: any[] }) => (
+    <div className="space-y-2">
+      {data.slice(-6).map((item, index) => (
+        <div key={item.month} className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground w-20">{item.month}</span>
+          <div className="flex items-center gap-2 flex-1">
+            <div className="flex-1 h-6 bg-muted rounded-md overflow-hidden">
+              <div 
+                className="h-full bg-primary rounded-md transition-all duration-300" 
+                style={{ width: `${(item.producoes / Math.max(...data.map(d => d.producoes))) * 100}%` }}
+              />
+            </div>
+            <span className="text-sm font-medium w-8 text-right">{item.producoes}</span>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
@@ -271,16 +271,7 @@ export default function Reports() {
           </CardHeader>
           <CardContent>
             <div className="h-64">
-              <Suspense fallback={
-                <div className="h-full bg-gradient-natural rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-muted-foreground">Carregando gráfico...</p>
-                  </div>
-                </div>
-              }>
-                <RechartsComponents />
-              </Suspense>
+              <SimpleBarChart data={chartData} />
             </div>
           </CardContent>
         </Card>
