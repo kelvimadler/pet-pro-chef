@@ -1,4 +1,3 @@
-import { Check, Circle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Stepper,
@@ -7,6 +6,7 @@ import {
   StepperSeparator,
   StepperTitle,
   StepperTrigger,
+  StepperDescription,
 } from "@/components/ui/stepper";
 
 interface Step {
@@ -73,7 +73,7 @@ export function ProductionSteps({ production }: ProductionStepsProps) {
 
   const steps = getSteps();
   
-  // Calculate current step number for stepper
+  // Calculate current step number for stepper (1-based)
   const getCurrentStepNumber = () => {
     const currentStepIndex = steps.findIndex(step => step.status === 'current');
     if (currentStepIndex !== -1) return currentStepIndex + 1;
@@ -94,32 +94,30 @@ export function ProductionSteps({ production }: ProductionStepsProps) {
             <StepperItem
               key={step.id}
               step={stepNumber}
+              completed={isCompleted}
               className="max-md:items-start [&:not(:last-child)]:flex-1"
             >
-              <StepperTrigger className="max-md:flex-col">
-                <StepperIndicator step={stepNumber} />
-                <div className="text-center md:text-left max-w-[80px] md:max-w-[120px]">
-                  <StepperTitle 
-                    className={cn(
-                      "text-xs md:text-sm transition-all duration-300",
-                      isCurrent ? "text-primary font-semibold" : 
-                      isCompleted ? "text-green-600 font-medium" : "text-muted-foreground"
-                    )}
-                  >
-                    {step.title}
-                  </StepperTitle>
-                  <p className="text-xs text-muted-foreground mt-1 hidden md:block">
-                    {step.description}
-                  </p>
+              <StepperTrigger asChild className="max-md:flex-col">
+                <div className="flex items-center gap-3 max-md:flex-col">
+                  <StepperIndicator />
+                  <div className="text-center md:text-left max-w-[80px] md:max-w-[120px]">
+                    <StepperTitle 
+                      className={cn(
+                        "transition-all duration-300",
+                        isCurrent ? "text-primary font-semibold" : 
+                        isCompleted ? "text-green-600 font-medium" : "text-muted-foreground"
+                      )}
+                    >
+                      {step.title}
+                    </StepperTitle>
+                    <StepperDescription className="hidden md:block mt-1">
+                      {step.description}
+                    </StepperDescription>
+                  </div>
                 </div>
               </StepperTrigger>
               {stepNumber < steps.length && (
-                <StepperSeparator 
-                  className={cn(
-                    "max-md:mt-3.5 md:mx-4 transition-all duration-500",
-                    isCompleted ? "bg-gradient-to-r from-green-500 to-green-600" : "bg-muted"
-                  )}
-                />
+                <StepperSeparator className="max-md:mt-3.5 md:mx-4" />
               )}
             </StepperItem>
           );
