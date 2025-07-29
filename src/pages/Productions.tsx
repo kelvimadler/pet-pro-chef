@@ -248,11 +248,21 @@ export default function Productions() {
                 </div>
 
                 <div className="flex gap-2 pt-2 border-t border-border/50">
-                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => navigate(`/productions/view/${production.id}`)}
+                    className="flex items-center gap-2"
+                  >
                     <Eye className="w-4 h-4" />
                     Visualizar
                   </Button>
-                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => navigate(`/productions/edit/${production.id}`)}
+                    className="flex items-center gap-2"
+                  >
                     <Edit className="w-4 h-4" />
                     Editar
                   </Button>

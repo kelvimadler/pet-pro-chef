@@ -1,15 +1,64 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useProductions } from "@/hooks/useProductions";
+import { useIngredients } from "@/hooks/useIngredients";
+import { useClients } from "@/hooks/useClients";
 import { 
   BarChart3, 
   TrendingUp, 
   Package, 
   Calendar,
   Download,
-  Filter
+  Filter,
+  Users,
+  ChefHat
 } from "lucide-react";
 
 export default function Reports() {
+  const { productions } = useProductions();
+  const { ingredients } = useIngredients();
+  const { clients } = useClients();
+
+  // Calculate real metrics
+  const last30Days = new Date();
+  last30Days.setDate(last30Days.getDate() - 30);
+
+  const recentProductions = productions.filter(p => 
+    new Date(p.production_date) >= last30Days
+  );
+
+  const finishedProductions = productions.filter(p => p.status === 'finished');
+  
+  // Calculate average yield
+  const avgYield = finishedProductions.length > 0 
+    ? finishedProductions
+        .filter(p => p.yield_percentage)
+        .reduce((sum, p) => sum + (p.yield_percentage || 0), 0) / 
+      finishedProductions.filter(p => p.yield_percentage).length
+    : 0;
+
+  // Calculate total weight consumed (approximation based on productions)
+  const totalWeightConsumed = finishedProductions.reduce((sum, p) => 
+    sum + (p.frozen_weight || 0), 0
+  );
+
+  // Find most produced protein type
+  const proteinCounts = productions.reduce((acc, p) => {
+    if (p.protein_type) {
+      acc[p.protein_type] = (acc[p.protein_type] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+
+  const mostProducedProtein = Object.entries(proteinCounts)
+    .sort(([,a], [,b]) => b - a)[0];
+
+  const productionsByMonth = productions.reduce((acc, p) => {
+    const month = new Date(p.production_date).toLocaleString('pt-BR', { month: 'short', year: 'numeric' });
+    acc[month] = (acc[month] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -42,7 +91,7 @@ export default function Reports() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-foreground">45</p>
+            <p className="text-2xl font-bold text-foreground">{recentProductions.length}</p>
             <p className="text-sm text-muted-foreground">Últimos 30 dias</p>
           </CardContent>
         </Card>
@@ -55,8 +104,8 @@ export default function Reports() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-foreground">125kg</p>
-            <p className="text-sm text-muted-foreground">Últimos 30 dias</p>
+            <p className="text-2xl font-bold text-foreground">{totalWeightConsumed.toFixed(0)}kg</p>
+            <p className="text-sm text-muted-foreground">Total processado</p>
           </CardContent>
         </Card>
 
@@ -68,7 +117,9 @@ export default function Reports() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-foreground">78%</p>
+            <p className="text-2xl font-bold text-foreground">
+              {avgYield > 0 ? `${avgYield.toFixed(1)}%` : "N/A"}
+            </p>
             <p className="text-sm text-muted-foreground">Rendimento</p>
           </CardContent>
         </Card>
@@ -76,37 +127,137 @@ export default function Reports() {
         <Card className="shadow-card-hover border-border/50">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              Produtos Mais Feitos
+              <ChefHat className="w-4 h-4" />
+              Mais Produzido
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-lg font-bold text-foreground">Snacks Frango</p>
-            <p className="text-sm text-muted-foreground">15 produções</p>
+            <p className="text-lg font-bold text-foreground">
+              {mostProducedProtein ? mostProducedProtein[0] : "N/A"}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {mostProducedProtein ? `${mostProducedProtein[1]} produções` : "Nenhuma produção"}
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Placeholder for Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Additional Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="shadow-card-hover border-border/50">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">Produção por Mês</CardTitle>
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <Users className="w-5 h-5 text-primary" />
+              Estatísticas de Clientes
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="h-64 bg-gradient-natural rounded-lg flex items-center justify-center">
-              <p className="text-muted-foreground">Gráfico de produção será implementado</p>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Total de clientes:</span>
+              <span className="font-medium">{clients.length}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Pets cadastrados:</span>
+              <span className="font-medium">
+                {clients.filter(c => c.pet_name).length}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Média de peso:</span>
+              <span className="font-medium">
+                {clients.filter(c => c.pet_weight).length > 0 
+                  ? `${(clients.filter(c => c.pet_weight).reduce((sum, c) => sum + (c.pet_weight || 0), 0) / clients.filter(c => c.pet_weight).length).toFixed(1)}kg`
+                  : "N/A"
+                }
+              </span>
             </div>
           </CardContent>
         </Card>
 
         <Card className="shadow-card-hover border-border/50">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">Consumo de Ingredientes</CardTitle>
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <Package className="w-5 h-5 text-primary" />
+              Estoque
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Total ingredientes:</span>
+              <span className="font-medium">{ingredients.length}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Estoque baixo:</span>
+              <span className="font-medium text-warning">
+                {ingredients.filter(i => i.current_stock <= i.minimum_stock).length}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Valor total:</span>
+              <span className="font-medium text-primary">
+                R$ {ingredients.reduce((sum, i) => sum + (i.current_stock * (i.cost_per_unit || 0)), 0).toFixed(2)}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card-hover border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-primary" />
+              Produções por Mês
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {Object.entries(productionsByMonth)
+              .slice(-3)
+              .map(([month, count]) => (
+                <div key={month} className="flex justify-between items-center">
+                  <span className="text-muted-foreground">{month}:</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-20 h-2 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-primary rounded-full" 
+                        style={{ width: `${(count / Math.max(...Object.values(productionsByMonth))) * 100}%` }}
+                      />
+                    </div>
+                    <span className="font-medium w-8 text-right">{count}</span>
+                  </div>
+                </div>
+              ))
+            }
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts Placeholder - Future Implementation */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="shadow-card-hover border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Tendência de Produção</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64 bg-gradient-natural rounded-lg flex items-center justify-center">
-              <p className="text-muted-foreground">Gráfico de consumo será implementado</p>
+              <div className="text-center">
+                <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
+                <p className="text-muted-foreground">Gráfico de tendências</p>
+                <p className="text-sm text-muted-foreground">Em desenvolvimento</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card-hover border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Eficiência por Produto</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64 bg-gradient-natural rounded-lg flex items-center justify-center">
+              <div className="text-center">
+                <TrendingUp className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
+                <p className="text-muted-foreground">Análise de eficiência</p>
+                <p className="text-sm text-muted-foreground">Em desenvolvimento</p>
+              </div>
             </div>
           </CardContent>
         </Card>

@@ -1,87 +1,127 @@
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { useClients } from "@/hooks/useClients";
 import { 
   Plus, 
   Search, 
+  Filter, 
   Utensils, 
-  User, 
+  User,
   Heart,
+  FileText,
+  Upload,
   Eye,
   Edit,
-  Printer
+  Trash2
 } from "lucide-react";
 
 export default function Menus() {
-  const menus = [
-    {
-      id: 1,
-      clientId: "CLI001",
-      petName: "Thor",
-      tutorName: "Ana Silva",
-      petWeight: "25kg",
-      breed: "Golden Retriever",
-      dailyRation: "400g",
-      mealsPerDay: 2,
-      status: "Ativo",
-      createdAt: "2024-07-25",
-      ingredients: [
-        { name: "Ração Premium", quantity: "300g" },
-        { name: "Peito de Frango", quantity: "100g" },
-        { name: "Batata Doce", quantity: "50g" },
-        { name: "Cenoura", quantity: "30g" }
-      ],
-      observations: "Alergia a milho. Evitar corantes artificiais."
-    },
-    {
-      id: 2,
-      clientId: "CLI002", 
-      petName: "Luna",
-      tutorName: "Carlos Santos",
-      petWeight: "8kg",
-      breed: "Shih Tzu",
-      dailyRation: "180g",
-      mealsPerDay: 3,
-      status: "Ativo",
-      createdAt: "2024-07-20",
-      ingredients: [
-        { name: "Ração Small Breed", quantity: "120g" },
-        { name: "Salmão", quantity: "40g" },
-        { name: "Abóbora", quantity: "20g" }
-      ],
-      observations: "Pet sensível. Transição gradual de alimentos."
-    },
-    {
-      id: 3,
-      clientId: "CLI003",
-      petName: "Rex", 
-      tutorName: "Maria Oliveira",
-      petWeight: "32kg",
-      breed: "Pastor Alemão",
-      dailyRation: "500g",
-      mealsPerDay: 2,
-      status: "Inativo",
-      createdAt: "2024-07-15",
-      ingredients: [
-        { name: "Ração Large Breed", quantity: "350g" },
-        { name: "Carne Bovina", quantity: "120g" },
-        { name: "Arroz Integral", quantity: "30g" }
-      ],
-      observations: "Cardápio suspenso temporariamente."
-    }
-  ];
+  const { clients } = useClients();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showDialog, setShowDialog] = useState(false);
+  const [editingMenu, setEditingMenu] = useState<any>(null);
+  const [menus, setMenus] = useState<any[]>([]);
+  const [formData, setFormData] = useState({
+    name: '',
+    client_id: '',
+    daily_food_amount: '',
+    meals_per_day: '2',
+    ingredients: [{ name: '', quantity: '', unit: 'g' }],
+    special_notes: ''
+  });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Ativo":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "Inativo":
-        return "bg-red-100 text-red-800 border-red-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      client_id: '',
+      daily_food_amount: '',
+      meals_per_day: '2',
+      ingredients: [{ name: '', quantity: '', unit: 'g' }],
+      special_notes: ''
+    });
+    setEditingMenu(null);
+  };
+
+  const addIngredient = () => {
+    setFormData(prev => ({
+      ...prev,
+      ingredients: [...prev.ingredients, { name: '', quantity: '', unit: 'g' }]
+    }));
+  };
+
+  const removeIngredient = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      ingredients: prev.ingredients.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateIngredient = (index: number, field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      ingredients: prev.ingredients.map((ing, i) => 
+        i === index ? { ...ing, [field]: value } : ing
+      )
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const menuData = {
+      ...formData,
+      id: editingMenu?.id || Date.now().toString(),
+      daily_food_amount: parseFloat(formData.daily_food_amount) || 0,
+      meals_per_day: parseInt(formData.meals_per_day) || 2,
+      is_active: true,
+      created_at: editingMenu?.created_at || new Date().toISOString()
+    };
+
+    if (editingMenu) {
+      setMenus(prev => prev.map(menu => menu.id === editingMenu.id ? menuData : menu));
+    } else {
+      setMenus(prev => [menuData, ...prev]);
+    }
+    
+    setShowDialog(false);
+    resetForm();
+  };
+
+  const handleEdit = (menu: any) => {
+    setEditingMenu(menu);
+    setFormData({
+      name: menu.name,
+      client_id: menu.client_id,
+      daily_food_amount: menu.daily_food_amount?.toString() || '',
+      meals_per_day: menu.meals_per_day?.toString() || '2',
+      ingredients: menu.ingredients || [{ name: '', quantity: '', unit: 'g' }],
+      special_notes: menu.special_notes || ''
+    });
+    setShowDialog(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm("Tem certeza que deseja remover este cardápio?")) {
+      setMenus(prev => prev.filter(menu => menu.id !== id));
     }
   };
+
+  const getClientName = (clientId: string) => {
+    const client = clients.find(c => c.id === clientId);
+    return client ? client.name : "Cliente não encontrado";
+  };
+
+  const filteredMenus = menus.filter(menu =>
+    menu.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    getClientName(menu.client_id).toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
@@ -90,121 +130,321 @@ export default function Menus() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Cardápios Personalizados</h1>
           <p className="text-muted-foreground mt-1">
-            Dietas customizadas para cada pet
+            Dietas específicas para cada pet
           </p>
         </div>
-        <Button className="bg-gradient-primary hover:scale-105 transition-transform shadow-elegant">
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Cardápio
-        </Button>
+        <Dialog open={showDialog} onOpenChange={setShowDialog}>
+          <DialogTrigger asChild>
+            <Button 
+              onClick={resetForm}
+              className="bg-gradient-primary hover:scale-105 transition-transform shadow-elegant"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Novo Cardápio
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {editingMenu ? "Editar Cardápio" : "Novo Cardápio"}
+              </DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nome do Cardápio *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="client">Cliente *</Label>
+                  <Select value={formData.client_id} onValueChange={(value) => setFormData(prev => ({ ...prev, client_id: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um cliente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clients.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.name} {client.pet_name && `(${client.pet_name})`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="daily-amount">Quantidade Diária (g) *</Label>
+                  <Input
+                    id="daily-amount"
+                    type="number"
+                    value={formData.daily_food_amount}
+                    onChange={(e) => setFormData(prev => ({ ...prev, daily_food_amount: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="meals">Refeições por Dia</Label>
+                  <Select value={formData.meals_per_day} onValueChange={(value) => setFormData(prev => ({ ...prev, meals_per_day: value }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 refeição</SelectItem>
+                      <SelectItem value="2">2 refeições</SelectItem>
+                      <SelectItem value="3">3 refeições</SelectItem>
+                      <SelectItem value="4">4 refeições</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Ingredientes</Label>
+                  <Button type="button" variant="outline" size="sm" onClick={addIngredient}>
+                    <Plus className="w-4 h-4 mr-1" />
+                    Adicionar
+                  </Button>
+                </div>
+                
+                {formData.ingredients.map((ingredient, index) => (
+                  <div key={index} className="grid grid-cols-12 gap-2 items-end">
+                    <div className="col-span-5">
+                      <Input
+                        placeholder="Nome do ingrediente"
+                        value={ingredient.name}
+                        onChange={(e) => updateIngredient(index, 'name', e.target.value)}
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Input
+                        type="number"
+                        placeholder="Quantidade"
+                        value={ingredient.quantity}
+                        onChange={(e) => updateIngredient(index, 'quantity', e.target.value)}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <Select value={ingredient.unit} onValueChange={(value) => updateIngredient(index, 'unit', value)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="g">g</SelectItem>
+                          <SelectItem value="kg">kg</SelectItem>
+                          <SelectItem value="ml">ml</SelectItem>
+                          <SelectItem value="L">L</SelectItem>
+                          <SelectItem value="unidades">un</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="col-span-2">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => removeIngredient(index)}
+                        disabled={formData.ingredients.length <= 1}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="notes">Observações Especiais</Label>
+                <Textarea
+                  id="notes"
+                  value={formData.special_notes}
+                  onChange={(e) => setFormData(prev => ({ ...prev, special_notes: e.target.value }))}
+                  placeholder="Alergias, preferências, instruções especiais..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Upload da Receita (opcional)</Label>
+                <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
+                  <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    Clique para fazer upload ou arraste um arquivo PDF/imagem
+                  </p>
+                  <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" />
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowDialog(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-gradient-primary hover:scale-105 transition-transform shadow-elegant"
+                >
+                  {editingMenu ? "Atualizar" : "Criar"} Cardápio
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Search */}
       <Card className="shadow-card-hover border-border/50">
         <CardContent className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input 
-              placeholder="Buscar por cliente, pet ou tutor..." 
-              className="pl-10"
-            />
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input 
+                placeholder="Buscar por cardápio ou cliente..." 
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <Button variant="outline" className="flex items-center gap-2">
+              <Filter className="w-4 h-4" />
+              Filtrar
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Menus List */}
+      {/* Menus Grid */}
       <div className="grid gap-4">
-        {menus.map((menu) => (
-          <Card key={menu.id} className="shadow-card-hover border-border/50 hover:shadow-elegant transition-all">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <CardTitle className="text-lg text-foreground flex items-center gap-2">
-                    <Heart className="w-5 h-5 text-primary" />
-                    {menu.petName} - {menu.breed}
-                  </CardTitle>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <User className="w-4 h-4" />
-                      {menu.tutorName}
-                    </span>
-                    <span>ID: {menu.clientId}</span>
-                    <span>Peso: {menu.petWeight}</span>
-                  </div>
-                </div>
-                <Badge 
-                  variant="outline" 
-                  className={getStatusColor(menu.status)}
+        {filteredMenus.length === 0 ? (
+          <Card className="shadow-card-hover border-border/50">
+            <CardContent className="p-8 text-center">
+              <Utensils className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">
+                {searchTerm ? "Nenhum cardápio encontrado" : "Nenhum cardápio cadastrado"}
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                {searchTerm 
+                  ? "Nenhum cardápio corresponde aos critérios de busca." 
+                  : "Comece criando cardápios personalizados para seus clientes."
+                }
+              </p>
+              {!searchTerm && (
+                <Button 
+                  onClick={() => { resetForm(); setShowDialog(true); }}
+                  className="bg-gradient-primary hover:scale-105 transition-transform shadow-elegant"
                 >
-                  {menu.status}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Utensils className="w-4 h-4" />
-                    <span className="font-medium">Dieta Diária</span>
-                  </div>
-                  <div className="bg-accent/30 rounded-lg p-3 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Ração Total:</span>
-                      <span className="font-medium text-foreground">{menu.dailyRation}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Refeições:</span>
-                      <span className="font-medium text-foreground">{menu.mealsPerDay}x ao dia</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Por refeição:</span>
-                      <span className="font-medium text-primary">
-                        {Math.round(parseInt(menu.dailyRation) / menu.mealsPerDay)}g
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Utensils className="w-4 h-4" />
-                    <span className="font-medium">Ingredientes</span>
-                  </div>
-                  <div className="space-y-2">
-                    {menu.ingredients.map((ingredient, index) => (
-                      <div key={index} className="flex justify-between text-sm bg-accent/20 rounded px-3 py-2">
-                        <span className="text-foreground">{ingredient.name}</span>
-                        <span className="font-medium text-primary">{ingredient.quantity}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {menu.observations && (
-                <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
-                  <p className="text-sm font-medium text-warning-foreground mb-1">Observações:</p>
-                  <p className="text-sm text-muted-foreground">{menu.observations}</p>
-                </div>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo Cardápio
+                </Button>
               )}
-
-              <div className="flex gap-2 pt-2 border-t border-border/50">
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <Eye className="w-4 h-4" />
-                  Visualizar
-                </Button>
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <Edit className="w-4 h-4" />
-                  Editar
-                </Button>
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <Printer className="w-4 h-4" />
-                  Imprimir
-                </Button>
-              </div>
             </CardContent>
           </Card>
-        ))}
+        ) : (
+          filteredMenus.map((menu) => (
+            <Card key={menu.id} className="shadow-card-hover border-border/50 hover:shadow-elegant transition-all">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <CardTitle className="text-lg text-foreground flex items-center gap-2">
+                      <Utensils className="w-5 h-5 text-primary" />
+                      {menu.name}
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                      <User className="w-3 h-3" />
+                      {getClientName(menu.client_id)}
+                    </p>
+                  </div>
+                  <Badge 
+                    variant="outline" 
+                    className={menu.is_active ? "bg-green-100 text-green-800 border-green-200" : "bg-gray-100 text-gray-800 border-gray-200"}
+                  >
+                    {menu.is_active ? "Ativo" : "Inativo"}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">Alimentação Diária</div>
+                    <div className="space-y-1">
+                      <p className="text-lg font-bold text-primary">{menu.daily_food_amount}g</p>
+                      <p className="text-xs text-muted-foreground">
+                        {menu.meals_per_day} refeição(ões) por dia
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">Ingredientes</div>
+                    <div className="space-y-1">
+                      {menu.ingredients.slice(0, 3).map((ing: any, index: number) => (
+                        <p key={index} className="text-xs text-foreground">
+                          {ing.name} - {ing.quantity}{ing.unit}
+                        </p>
+                      ))}
+                      {menu.ingredients.length > 3 && (
+                        <p className="text-xs text-muted-foreground">
+                          +{menu.ingredients.length - 3} mais...
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">Informações</div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-foreground">
+                        Criado: {new Date(menu.created_at).toLocaleDateString('pt-BR')}
+                      </p>
+                      {menu.special_notes && (
+                        <p className="text-xs text-muted-foreground">
+                          Observações especiais
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2 border-t border-border/50">
+                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                    <Eye className="w-4 h-4" />
+                    Visualizar
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleEdit(menu)}
+                    className="flex items-center gap-2"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Editar
+                  </Button>
+                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Imprimir
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleDelete(menu.id)}
+                    className="flex items-center gap-2 text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Remover
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
     </div>
   );
