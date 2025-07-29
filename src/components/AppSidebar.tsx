@@ -34,6 +34,7 @@ import {
 const menuItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Produções", url: "/productions", icon: ChefHat },
+  { title: "Produtos", url: "/products", icon: PackageSearch },
   { title: "Cardápios", url: "/menus", icon: Utensils },
   { title: "Estoque", url: "/inventory", icon: Package },
   { title: "Etiquetas", url: "/labels", icon: QrCode },

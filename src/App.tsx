@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Layout } from "@/components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Productions from "./pages/Productions";
+import Products from "./pages/Products";
 import Menus from "./pages/Menus";
 import Inventory from "./pages/Inventory";
 import Labels from "./pages/Labels";
@@ -75,6 +76,11 @@ function AppContent() {
       <Route path="/productions/edit/:id" element={
         <ProtectedRoute>
           <Layout><NewProduction /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/products" element={
+        <ProtectedRoute>
+          <Layout><Products /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/menus" element={
