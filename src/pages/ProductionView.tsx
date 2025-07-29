@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useProductions } from "@/hooks/useProductions";
 import { ArrowLeft, ChefHat, Clock, Package, Edit, Play, CheckCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ProductionView() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { productions, updateProduction } = useProductions();
+  const { toast } = useToast();
   const [production, setProduction] = useState<any>(null);
 
   useEffect(() => {
@@ -56,10 +58,25 @@ export default function ProductionView() {
     }
   };
 
+  const canStartProduction = () => {
+    return production.initial_cleaning && 
+           production.epi_used && 
+           production.frozen_weight && 
+           production.thawed_weight;
+  };
+
   const handleStartProduction = async () => {
+    if (!canStartProduction()) {
+      toast({
+        title: "Etapas incompletas",
+        description: "Complete todas as etapas obrigatórias antes de iniciar a produção",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     await updateProduction(production.id, { 
-      status: 'in_progress',
-      dehydrator_entry_time: new Date().toISOString()
+      status: 'in_progress'
     });
   };
 
@@ -260,7 +277,8 @@ export default function ProductionView() {
         {production.status === 'open' && (
           <Button 
             onClick={handleStartProduction}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+            disabled={!canStartProduction()}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
           >
             <Play className="w-4 h-4" />
             Iniciar Produção

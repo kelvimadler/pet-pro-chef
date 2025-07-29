@@ -27,7 +27,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
         
         if (event === 'SIGNED_IN' && session) {
-          navigate('/');
+          // Only navigate if we're currently on the auth page
+          if (window.location.pathname === '/auth') {
+            navigate('/');
+          }
         }
         if (event === 'SIGNED_OUT') {
           navigate('/auth');

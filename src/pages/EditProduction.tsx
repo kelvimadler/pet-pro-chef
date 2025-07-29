@@ -215,18 +215,6 @@ export default function EditProduction() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="thawed-weight">Peso Descongelado (kg)</Label>
-              <Input
-                id="thawed-weight"
-                type="number"
-                step="0.01"
-                value={formData.thawed_weight || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, thawed_weight: e.target.value }))}
-                onBlur={() => handleUpdate({ thawed_weight: parseFloat(formData.thawed_weight) || null })}
-              />
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="thaw-time">Hora de Descongelamento</Label>
               <Input
                 id="thaw-time"
@@ -236,6 +224,18 @@ export default function EditProduction() {
                   setFormData(prev => ({ ...prev, thaw_time: e.target.value }));
                   handleUpdate({ thaw_time: parseDateTime(e.target.value) });
                 }}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="thawed-weight">Peso Descongelado (kg)</Label>
+              <Input
+                id="thawed-weight"
+                type="number"
+                step="0.01"
+                value={formData.thawed_weight || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, thawed_weight: e.target.value }))}
+                onBlur={() => handleUpdate({ thawed_weight: parseFloat(formData.thawed_weight) || null })}
               />
             </div>
           </div>
