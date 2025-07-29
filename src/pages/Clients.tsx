@@ -34,52 +34,7 @@ export default function Clients() {
     notes: ''
   });
 
-  const mockClients = [
-    {
-      id: "CLI001",
-      name: "Ana Silva",
-      email: "ana.silva@email.com",
-      phone: "(11) 99999-1234",
-      address: "Rua das Flores, 123 - São Paulo/SP",
-      registeredAt: "2024-06-15",
-      pets: [
-        { name: "Thor", breed: "Golden Retriever", age: "3 anos" },
-        { name: "Bella", breed: "Labrador", age: "2 anos" }
-      ],
-      activeMenus: 2,
-      totalOrders: 15,
-      status: "Ativo"
-    },
-    {
-      id: "CLI002", 
-      name: "Carlos Santos",
-      email: "carlos.santos@email.com",
-      phone: "(11) 98888-5678",
-      address: "Av. Principal, 456 - São Paulo/SP",
-      registeredAt: "2024-07-01",
-      pets: [
-        { name: "Luna", breed: "Shih Tzu", age: "5 anos" }
-      ],
-      activeMenus: 1,
-      totalOrders: 8,
-      status: "Ativo"
-    },
-    {
-      id: "CLI003",
-      name: "Maria Oliveira", 
-      email: "maria.oliveira@email.com",
-      phone: "(11) 97777-9012",
-      address: "Rua Central, 789 - São Paulo/SP",
-      registeredAt: "2024-05-20",
-      pets: [
-        { name: "Rex", breed: "Pastor Alemão", age: "4 anos" },
-        { name: "Nina", breed: "Border Collie", age: "1 ano" }
-      ],
-      activeMenus: 0,
-      totalOrders: 22,
-      status: "Inativo"
-    }
-  ];
+  // Only use real clients from Supabase
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,8 +55,7 @@ export default function Clients() {
     });
   };
 
-  const allClients = [...clients, ...mockClients];
-  const filteredClients = allClients.filter(client =>
+  const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
@@ -243,7 +197,20 @@ export default function Clients() {
 
       {/* Clients List */}
       <div className="grid gap-4">
-        {filteredClients.map((client) => (
+        {loading ? (
+          <div className="flex items-center justify-center h-32">
+            <p className="text-muted-foreground">Carregando clientes...</p>
+          </div>
+        ) : filteredClients.length === 0 ? (
+          <Card className="shadow-card-hover border-border/50">
+            <CardContent className="p-8 text-center">
+              <p className="text-muted-foreground">
+                {searchTerm ? "Nenhum cliente encontrado para a busca." : "Nenhum cliente cadastrado ainda."}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          filteredClients.map((client) => (
           <Card key={client.id} className="shadow-card-hover border-border/50 hover:shadow-elegant transition-all">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
@@ -253,14 +220,14 @@ export default function Clients() {
                     {client.name}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    ID: {client.id} • Cliente desde {new Date((client as any).registeredAt || (client as any).created_at).toLocaleDateString("pt-BR")}
+                    Cliente desde {new Date(client.created_at).toLocaleDateString("pt-BR")}
                   </p>
                 </div>
                 <Badge 
                   variant="outline" 
-                   className={getStatusColor((client as any).status || 'Ativo')}
-                 >
-                   {(client as any).status || 'Ativo'}
+                  className="bg-green-100 text-green-800 border-green-200"
+                >
+                  Ativo
                 </Badge>
               </div>
             </CardHeader>
@@ -290,12 +257,16 @@ export default function Clients() {
                     <span className="text-sm font-medium">Pets</span>
                   </div>
                   <div className="space-y-2">
-                    {((client as any).pets || []).map((pet: any, index: number) => (
-                      <div key={index} className="bg-accent/30 rounded-lg p-3">
-                        <p className="font-medium text-foreground text-sm">{pet.name}</p>
-                        <p className="text-xs text-muted-foreground">{pet.breed} • {pet.age}</p>
+                    {client.pet_name ? (
+                      <div className="bg-accent/30 rounded-lg p-3">
+                        <p className="font-medium text-foreground text-sm">{client.pet_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {client.pet_breed} {client.pet_weight && `• ${client.pet_weight}kg`}
+                        </p>
                       </div>
-                    ))}
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Nenhum pet cadastrado</p>
+                    )}
                   </div>
                 </div>
 
@@ -304,15 +275,15 @@ export default function Clients() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Cardápios ativos:</span>
-                      <span className="font-medium text-primary">{(client as any).activeMenus || 0}</span>
+                      <span className="font-medium text-primary">0</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Total de pedidos:</span>
-                      <span className="font-medium text-foreground">{(client as any).totalOrders || 0}</span>
+                      <span className="font-medium text-foreground">0</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Pets cadastrados:</span>
-                      <span className="font-medium text-foreground">{((client as any).pets || []).length}</span>
+                      <span className="font-medium text-foreground">{client.pet_name ? 1 : 0}</span>
                     </div>
                   </div>
                 </div>
@@ -333,11 +304,7 @@ export default function Clients() {
                   className="flex items-center gap-2"
                   onClick={() => {
                     if (confirm(`Deseja excluir o cliente ${client.name}?`)) {
-                      if (client.id.startsWith('CLI')) {
-                        alert('Cliente de exemplo não pode ser excluído');
-                      } else {
-                        deleteClient(client.id);
-                      }
+                      deleteClient(client.id);
                     }
                   }}
                 >
@@ -347,7 +314,8 @@ export default function Clients() {
               </div>
             </CardContent>
           </Card>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

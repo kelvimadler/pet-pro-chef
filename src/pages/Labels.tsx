@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { useLabels } from "@/hooks/useLabels";
 import { 
   QrCode, 
   Calendar, 
@@ -12,38 +14,23 @@ import {
 } from "lucide-react";
 
 export default function Labels() {
-  const products = [
-    {
-      id: 1,
-      name: "Snacks de Frango Desidratado",
-      batch: "LOT240729001",
-      productionDate: "2024-07-29",
-      expiryDate: "2024-09-29",
-      quantity: 24,
-      packageSize: "60g",
-      status: "valid"
-    },
-    {
-      id: 2,
-      name: "Biscoitos de Batata Doce", 
-      batch: "LOT240728002",
-      productionDate: "2024-07-28",
-      expiryDate: "2024-07-30",
-      quantity: 15,
-      packageSize: "150g", 
-      status: "expiring"
-    },
-    {
-      id: 3,
-      name: "Petiscos de Salmão",
-      batch: "LOT240725003", 
-      productionDate: "2024-07-25",
-      expiryDate: "2024-07-28",
-      quantity: 8,
-      packageSize: "60g",
-      status: "expired"
-    }
-  ];
+  const { labels, loading, printLabel } = useLabels();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredLabels = labels.filter(label =>
+    label.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    label.batch_code.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-muted-foreground">Carregando etiquetas...</p>
+        </div>
+      </div>
+    );
+  }
 
   const getStatusInfo = (status: string, expiryDate: string) => {
     const today = new Date();
@@ -106,30 +93,41 @@ export default function Labels() {
             <Input 
               placeholder="Buscar por produto ou lote..." 
               className="pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </CardContent>
       </Card>
 
-      {/* Products List */}
+      {/* Labels List */}
       <div className="grid gap-4">
-        {products.map((product) => {
-          const statusInfo = getStatusInfo(product.status, product.expiryDate);
-          const daysInfo = getDaysUntilExpiry(product.expiryDate);
+        {filteredLabels.length === 0 ? (
+          <Card className="shadow-card-hover border-border/50">
+            <CardContent className="p-8 text-center">
+              <p className="text-muted-foreground">
+                {searchTerm ? "Nenhuma etiqueta encontrada para a busca." : "Nenhuma etiqueta cadastrada ainda."}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          filteredLabels.map((label) => {
+            const statusInfo = getStatusInfo(label.status || 'valid', label.expiry_date);
+            const daysInfo = getDaysUntilExpiry(label.expiry_date);
 
-          return (
-            <Card key={product.id} className="shadow-card-hover border-border/50 hover:shadow-elegant transition-all">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <CardTitle className="text-lg text-foreground flex items-center gap-2">
-                      <QrCode className="w-5 h-5 text-primary" />
-                      {product.name}
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Lote: {product.batch} • {product.quantity} unidades ({product.packageSize})
-                    </p>
-                  </div>
+            return (
+              <Card key={label.id} className="shadow-card-hover border-border/50 hover:shadow-elegant transition-all">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <CardTitle className="text-lg text-foreground flex items-center gap-2">
+                        <QrCode className="w-5 h-5 text-primary" />
+                        {label.product_name}
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        Lote: {label.batch_code} • {label.package_size}g {label.printed && '• Impressa'}
+                      </p>
+                    </div>
                   <Badge 
                     variant="outline" 
                     className={statusInfo.color}
@@ -149,13 +147,13 @@ export default function Labels() {
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Fabricação:</span>
                         <span className="font-medium text-foreground">
-                          {new Date(product.productionDate).toLocaleDateString("pt-BR")}
+                          {new Date(label.production_date).toLocaleDateString("pt-BR")}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Validade:</span>
                         <span className="font-medium text-foreground">
-                          {new Date(product.expiryDate).toLocaleDateString("pt-BR")}
+                          {new Date(label.expiry_date).toLocaleDateString("pt-BR")}
                         </span>
                       </div>
                     </div>
@@ -187,9 +185,8 @@ export default function Labels() {
                         variant="outline" 
                         size="sm" 
                         className="w-full flex items-center gap-2"
-                        onClick={() => {
-                          window.print();
-                        }}
+                        onClick={() => printLabel(label.id)}
+                        disabled={label.printed}
                       >
                         <Printer className="w-4 h-4" />
                         Imprimir Etiquetas
@@ -207,12 +204,12 @@ export default function Labels() {
                   <div className="text-sm text-muted-foreground mb-2">Preview da Etiqueta:</div>
                   <div className="bg-white border border-border rounded-lg p-4 max-w-sm">
                     <div className="text-center space-y-2">
-                      <h4 className="font-bold text-sm text-gray-900">{product.name}</h4>
+                      <h4 className="font-bold text-sm text-gray-900">{label.product_name}</h4>
                       <div className="text-xs text-gray-600 space-y-1">
-                        <p>Lote: {product.batch}</p>
-                        <p>Fabricação: {new Date(product.productionDate).toLocaleDateString("pt-BR")}</p>
-                        <p>Validade: {new Date(product.expiryDate).toLocaleDateString("pt-BR")}</p>
-                        <p>Peso: {product.packageSize}</p>
+                        <p>Lote: {label.batch_code}</p>
+                        <p>Fabricação: {new Date(label.production_date).toLocaleDateString("pt-BR")}</p>
+                        <p>Validade: {new Date(label.expiry_date).toLocaleDateString("pt-BR")}</p>
+                        <p>Peso: {label.package_size}g</p>
                       </div>
                       <div className="bg-gray-100 h-8 flex items-center justify-center">
                         <QrCode className="w-6 h-6 text-gray-400" />
@@ -223,7 +220,8 @@ export default function Labels() {
               </CardContent>
             </Card>
           );
-        })}
+          })
+        )}
       </div>
     </div>
   );

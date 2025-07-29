@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,11 @@ import {
 export default function Settings() {
   const { settings, saveSettings } = useSettings();
   const [formData, setFormData] = useState(settings);
+
+  // Update formData when settings change
+  React.useEffect(() => {
+    setFormData(settings);
+  }, [settings]);
 
   const handleSave = async () => {
     await saveSettings(formData);
@@ -60,11 +65,19 @@ export default function Settings() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="company-cnpj">CNPJ</Label>
-                <Input id="company-cnpj" defaultValue="00.000.000/0000-00" />
+                <Input 
+                  id="company-cnpj" 
+                  value={formData.company_cnpj}
+                  onChange={(e) => setFormData(prev => ({ ...prev, company_cnpj: e.target.value }))}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="company-address">Endereço</Label>
-                <Input id="company-address" defaultValue="Rua da Fábrica, 123 - São Paulo/SP" />
+                <Input 
+                  id="company-address" 
+                  value={formData.company_address}
+                  onChange={(e) => setFormData(prev => ({ ...prev, company_address: e.target.value }))}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="company-phone">Telefone</Label>
@@ -90,15 +103,30 @@ export default function Settings() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="snacks-validity">Validade Snacks (dias)</Label>
-                <Input id="snacks-validity" type="number" defaultValue="60" />
+                <Input 
+                  id="snacks-validity" 
+                  type="number" 
+                  value={formData.snacks_validity}
+                  onChange={(e) => setFormData(prev => ({ ...prev, snacks_validity: parseInt(e.target.value) || 60 }))}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="biscuits-validity">Validade Biscoitos (dias)</Label>
-                <Input id="biscuits-validity" type="number" defaultValue="90" />
+                <Input 
+                  id="biscuits-validity" 
+                  type="number" 
+                  value={formData.biscuits_validity}
+                  onChange={(e) => setFormData(prev => ({ ...prev, biscuits_validity: parseInt(e.target.value) || 90 }))}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="premium-validity">Validade Premium (dias)</Label>
-                <Input id="premium-validity" type="number" defaultValue="45" />
+                <Input 
+                  id="premium-validity" 
+                  type="number" 
+                  value={formData.premium_validity}
+                  onChange={(e) => setFormData(prev => ({ ...prev, premium_validity: parseInt(e.target.value) || 45 }))}
+                />
               </div>
             </div>
           </CardContent>
@@ -121,7 +149,11 @@ export default function Settings() {
                     Notificar quando produtos estão próximos ao vencimento
                   </p>
                 </div>
-                <Switch id="expiry-alerts" defaultChecked />
+                <Switch 
+                  id="expiry-alerts" 
+                  checked={formData.expiry_alerts}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, expiry_alerts: checked }))}
+                />
               </div>
               
               <div className="flex items-center justify-between">
@@ -131,7 +163,11 @@ export default function Settings() {
                     Notificar quando ingredientes estão em baixa
                   </p>
                 </div>
-                <Switch id="stock-alerts" defaultChecked />
+                <Switch 
+                  id="stock-alerts" 
+                  checked={formData.stock_alerts}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, stock_alerts: checked }))}
+                />
               </div>
               
               <div className="flex items-center justify-between">
@@ -141,18 +177,32 @@ export default function Settings() {
                     Notificar sobre etapas de produção pendentes
                   </p>
                 </div>
-                <Switch id="production-alerts" defaultChecked />
+                <Switch 
+                  id="production-alerts" 
+                  checked={formData.production_alerts}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, production_alerts: checked }))}
+                />
               </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border/50">
               <div className="space-y-2">
                 <Label htmlFor="expiry-days">Alertar X dias antes do vencimento</Label>
-                <Input id="expiry-days" type="number" defaultValue="3" />
+                <Input 
+                  id="expiry-days" 
+                  type="number" 
+                  value={formData.expiry_days}
+                  onChange={(e) => setFormData(prev => ({ ...prev, expiry_days: parseInt(e.target.value) || 3 }))}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="stock-percentage">Alertar quando estoque menor que X%</Label>
-                <Input id="stock-percentage" type="number" defaultValue="30" />
+                <Input 
+                  id="stock-percentage" 
+                  type="number" 
+                  value={formData.stock_percentage}
+                  onChange={(e) => setFormData(prev => ({ ...prev, stock_percentage: parseInt(e.target.value) || 30 }))}
+                />
               </div>
             </div>
           </CardContent>

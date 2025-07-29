@@ -159,6 +159,7 @@ export type Database = {
           product_name: string
           production_date: string
           production_id: string | null
+          status: string | null
           user_id: string
         }
         Insert: {
@@ -171,6 +172,7 @@ export type Database = {
           product_name: string
           production_date: string
           production_id?: string | null
+          status?: string | null
           user_id: string
         }
         Update: {
@@ -183,6 +185,7 @@ export type Database = {
           product_name?: string
           production_date?: string
           production_id?: string | null
+          status?: string | null
           user_id?: string
         }
         Relationships: [
@@ -280,6 +283,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      pets: {
+        Row: {
+          age: string | null
+          breed: string | null
+          client_id: string | null
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+          weight: number | null
+        }
+        Insert: {
+          age?: string | null
+          breed?: string | null
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+          weight?: number | null
+        }
+        Update: {
+          age?: string | null
+          breed?: string | null
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pets_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       productions: {
         Row: {
@@ -414,32 +464,62 @@ export type Database = {
       }
       profiles: {
         Row: {
+          biscuits_validity: number | null
+          company_address: string | null
+          company_cnpj: string | null
           company_name: string | null
           created_at: string
           email: string | null
+          expiry_alerts: boolean | null
+          expiry_days: number | null
           id: string
           name: string
           phone: string | null
+          premium_validity: number | null
+          production_alerts: boolean | null
+          snacks_validity: number | null
+          stock_alerts: boolean | null
+          stock_percentage: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          biscuits_validity?: number | null
+          company_address?: string | null
+          company_cnpj?: string | null
           company_name?: string | null
           created_at?: string
           email?: string | null
+          expiry_alerts?: boolean | null
+          expiry_days?: number | null
           id?: string
           name: string
           phone?: string | null
+          premium_validity?: number | null
+          production_alerts?: boolean | null
+          snacks_validity?: number | null
+          stock_alerts?: boolean | null
+          stock_percentage?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          biscuits_validity?: number | null
+          company_address?: string | null
+          company_cnpj?: string | null
           company_name?: string | null
           created_at?: string
           email?: string | null
+          expiry_alerts?: boolean | null
+          expiry_days?: number | null
           id?: string
           name?: string
           phone?: string | null
+          premium_validity?: number | null
+          production_alerts?: boolean | null
+          snacks_validity?: number | null
+          stock_alerts?: boolean | null
+          stock_percentage?: number | null
           updated_at?: string
           user_id?: string
         }

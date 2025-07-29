@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useProductions } from "@/hooks/useProductions";
 import { useIngredients } from "@/hooks/useIngredients";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useLabels } from "@/hooks/useLabels";
 import { useNavigate } from "react-router-dom";
 import { 
   ChefHat, 
@@ -21,6 +22,7 @@ export default function Dashboard() {
   const { productions } = useProductions();
   const { getLowStockIngredients } = useIngredients();
   const { unreadCount } = useNotifications();
+  const { getExpiringLabels } = useLabels();
   const navigate = useNavigate();
   
   const todayProductions = productions.filter(p => {
@@ -110,26 +112,37 @@ export default function Dashboard() {
   // Use real production data for current productions
   const currentProductions = inProgressProductions.slice(0, 3);
 
-  const expiringProducts = [
-    {
-      name: "Snacks de Frango - Lote 240728",
-      expiresAt: "Hoje",
-      quantity: "8 pacotes",
-      severity: "high"
-    },
-    {
-      name: "Biscoitos Integrais - Lote 240725",
-      expiresAt: "Amanhã", 
-      quantity: "15 pacotes",
-      severity: "medium"
-    },
-    {
-      name: "Petiscos Salmão - Lote 240720",
-      expiresAt: "2 dias",
-      quantity: "6 pacotes", 
-      severity: "low"
+  // Get real expiring products from labels
+  const expiringLabels = getExpiringLabels().slice(0, 3);
+  const expiringProducts = expiringLabels.map(label => {
+    const today = new Date();
+    const expiry = new Date(label.expiry_date);
+    const daysUntilExpiry = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    let expiresAt = '';
+    let severity = 'low';
+    
+    if (daysUntilExpiry < 0) {
+      expiresAt = 'Vencido';
+      severity = 'high';
+    } else if (daysUntilExpiry === 0) {
+      expiresAt = 'Hoje';
+      severity = 'high';
+    } else if (daysUntilExpiry === 1) {
+      expiresAt = 'Amanhã';
+      severity = 'medium';
+    } else {
+      expiresAt = `${daysUntilExpiry} dias`;
+      severity = 'low';
     }
-  ];
+    
+    return {
+      name: `${label.product_name} - ${label.batch_code}`,
+      expiresAt,
+      quantity: `${label.package_size}g`,
+      severity
+    };
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {

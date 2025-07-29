@@ -51,12 +51,21 @@ export function useSettings() {
       if (error && error.code !== 'PGRST116') throw error;
       
       if (data) {
-        // Merge with defaults
+        // Merge with database data
         setSettings(prev => ({
           ...prev,
           company_name: data.company_name || prev.company_name,
+          company_cnpj: data.company_cnpj || prev.company_cnpj,
+          company_address: data.company_address || prev.company_address,
           company_phone: data.phone || prev.company_phone,
-          // Add other fields as they're added to the profiles table
+          snacks_validity: data.snacks_validity || prev.snacks_validity,
+          biscuits_validity: data.biscuits_validity || prev.biscuits_validity,
+          premium_validity: data.premium_validity || prev.premium_validity,
+          expiry_alerts: data.expiry_alerts !== null ? data.expiry_alerts : prev.expiry_alerts,
+          stock_alerts: data.stock_alerts !== null ? data.stock_alerts : prev.stock_alerts,
+          production_alerts: data.production_alerts !== null ? data.production_alerts : prev.production_alerts,
+          expiry_days: data.expiry_days || prev.expiry_days,
+          stock_percentage: data.stock_percentage || prev.stock_percentage,
         }));
       }
     } catch (error) {
@@ -78,7 +87,17 @@ export function useSettings() {
         .from('profiles')
         .update({
           company_name: newSettings.company_name,
+          company_cnpj: newSettings.company_cnpj,
+          company_address: newSettings.company_address,
           phone: newSettings.company_phone,
+          snacks_validity: newSettings.snacks_validity,
+          biscuits_validity: newSettings.biscuits_validity,
+          premium_validity: newSettings.premium_validity,
+          expiry_alerts: newSettings.expiry_alerts,
+          stock_alerts: newSettings.stock_alerts,
+          production_alerts: newSettings.production_alerts,
+          expiry_days: newSettings.expiry_days,
+          stock_percentage: newSettings.stock_percentage,
         })
         .eq('user_id', user.id);
 
