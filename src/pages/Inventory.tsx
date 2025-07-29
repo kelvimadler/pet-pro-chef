@@ -415,8 +415,11 @@ export default function Inventory() {
                           onClick={() => {
                             const quantity = prompt('Quantidade a adicionar:');
                             if (quantity) {
-                              const newStock = (ingredient.current_stock || 0) + parseFloat(quantity);
-                              updateIngredient(ingredient.id, { current_stock: newStock });
+                              const numericQuantity = parseFloat(quantity.replace(',', '.'));
+                              if (!isNaN(numericQuantity)) {
+                                const newStock = (ingredient.current_stock || 0) + numericQuantity;
+                                updateIngredient(ingredient.id, { current_stock: newStock });
+                              }
                             }
                           }}
                         >
@@ -430,8 +433,11 @@ export default function Inventory() {
                           onClick={() => {
                             const quantity = prompt('Quantidade a subtrair:');
                             if (quantity) {
-                              const newStock = Math.max(0, (ingredient.current_stock || 0) - parseFloat(quantity));
-                              updateIngredient(ingredient.id, { current_stock: newStock });
+                              const numericQuantity = parseFloat(quantity.replace(',', '.'));
+                              if (!isNaN(numericQuantity)) {
+                                const newStock = Math.max(0, (ingredient.current_stock || 0) - numericQuantity);
+                                updateIngredient(ingredient.id, { current_stock: newStock });
+                              }
                             }
                           }}
                         >

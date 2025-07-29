@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useClients } from "@/hooks/useClients";
+import { Switch } from "@/components/ui/switch";
 import { 
   Users, 
   Plus, 
@@ -20,10 +21,24 @@ import {
 } from "lucide-react";
 
 export default function Clients() {
-  const { clients, loading, createClient, deleteClient } = useClients();
+  const { clients, loading, createClient, deleteClient, updateClient } = useClients();
   const [searchTerm, setSearchTerm] = useState("");
   const [showDialog, setShowDialog] = useState(false);
+  const [viewDialog, setViewDialog] = useState(false);
+  const [editDialog, setEditDialog] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<any>(null);
   const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    pet_name: '',
+    pet_breed: '',
+    pet_weight: '',
+    notes: ''
+  });
+
+  const [editFormData, setEditFormData] = useState({
     name: '',
     email: '',
     phone: '',
@@ -53,6 +68,38 @@ export default function Clients() {
       pet_weight: '',
       notes: ''
     });
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedClient) return;
+    
+    await updateClient(selectedClient.id, {
+      ...editFormData,
+      pet_weight: editFormData.pet_weight ? parseFloat(editFormData.pet_weight) : null
+    });
+    setEditDialog(false);
+    setSelectedClient(null);
+  };
+
+  const handleEdit = (client: any) => {
+    setSelectedClient(client);
+    setEditFormData({
+      name: client.name || '',
+      email: client.email || '',
+      phone: client.phone || '',
+      address: client.address || '',
+      pet_name: client.pet_name || '',
+      pet_breed: client.pet_breed || '',
+      pet_weight: client.pet_weight?.toString() || '',
+      notes: client.notes || ''
+    });
+    setEditDialog(true);
+  };
+
+  const handleView = (client: any) => {
+    setSelectedClient(client);
+    setViewDialog(true);
   };
 
   const filteredClients = clients.filter(client =>
@@ -290,11 +337,21 @@ export default function Clients() {
               </div>
 
               <div className="flex gap-2 pt-2 border-t border-border/50">
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-2"
+                  onClick={() => handleView(client)}
+                >
                   <Eye className="w-4 h-4" />
                   Visualizar
                 </Button>
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-2"
+                  onClick={() => handleEdit(client)}
+                >
                   <Edit className="w-4 h-4" />
                   Editar
                 </Button>
@@ -317,6 +374,146 @@ export default function Clients() {
           ))
         )}
       </div>
+
+      {/* View Client Dialog */}
+      <Dialog open={viewDialog} onOpenChange={setViewDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-primary" />
+              {selectedClient?.name}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedClient && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-semibold text-foreground mb-2">Informações de Contato</h3>
+                  <div className="space-y-2 text-sm">
+                    <p><span className="text-muted-foreground">Email:</span> {selectedClient.email || 'Não informado'}</p>
+                    <p><span className="text-muted-foreground">Telefone:</span> {selectedClient.phone || 'Não informado'}</p>
+                    <p><span className="text-muted-foreground">Endereço:</span> {selectedClient.address || 'Não informado'}</p>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground mb-2">Informações do Pet</h3>
+                  <div className="space-y-2 text-sm">
+                    <p><span className="text-muted-foreground">Nome:</span> {selectedClient.pet_name || 'Não informado'}</p>
+                    <p><span className="text-muted-foreground">Raça:</span> {selectedClient.pet_breed || 'Não informado'}</p>
+                    <p><span className="text-muted-foreground">Peso:</span> {selectedClient.pet_weight ? `${selectedClient.pet_weight}kg` : 'Não informado'}</p>
+                  </div>
+                </div>
+              </div>
+              {selectedClient.notes && (
+                <div>
+                  <h3 className="font-semibold text-foreground mb-2">Observações</h3>
+                  <p className="text-sm text-muted-foreground bg-accent/20 p-3 rounded-lg">{selectedClient.notes}</p>
+                </div>
+              )}
+              <div>
+                <h3 className="font-semibold text-foreground mb-2">Informações do Sistema</h3>
+                <div className="text-sm text-muted-foreground">
+                  <p>Cliente desde: {new Date(selectedClient.created_at).toLocaleDateString('pt-BR')}</p>
+                  <p>Última atualização: {new Date(selectedClient.updated_at).toLocaleDateString('pt-BR')}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Client Dialog */}
+      <Dialog open={editDialog} onOpenChange={setEditDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Editar Cliente</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEditSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Nome *</Label>
+                <Input
+                  id="edit-name"
+                  value={editFormData.name}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, name: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-email">Email</Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  value={editFormData.email}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, email: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-phone">Telefone</Label>
+                <Input
+                  id="edit-phone"
+                  value={editFormData.phone}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, phone: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-pet-name">Nome do Pet</Label>
+                <Input
+                  id="edit-pet-name"
+                  value={editFormData.pet_name}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, pet_name: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-address">Endereço</Label>
+              <Input
+                id="edit-address"
+                value={editFormData.address}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, address: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-pet-breed">Raça do Pet</Label>
+                <Input
+                  id="edit-pet-breed"
+                  value={editFormData.pet_breed}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, pet_breed: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-pet-weight">Peso do Pet (kg)</Label>
+                <Input
+                  id="edit-pet-weight"
+                  type="number"
+                  step="0.1"
+                  value={editFormData.pet_weight}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, pet_weight: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-notes">Observações</Label>
+              <Textarea
+                id="edit-notes"
+                value={editFormData.notes}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, notes: e.target.value }))}
+              />
+            </div>
+            <div className="flex gap-4 pt-4">
+              <Button type="button" variant="outline" onClick={() => setEditDialog(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" className="bg-gradient-primary">
+                Salvar Alterações
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { useProductions } from "@/hooks/useProductions";
 import { useIngredients } from "@/hooks/useIngredients";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useLabels } from "@/hooks/useLabels";
+import { useSanitaryLabels } from "@/hooks/useSanitaryLabels";
 import { useNavigate } from "react-router-dom";
 import { 
   ChefHat, 
@@ -23,6 +24,7 @@ export default function Dashboard() {
   const { getLowStockIngredients } = useIngredients();
   const { unreadCount } = useNotifications();
   const { getExpiringLabels } = useLabels();
+  const { getExpiringLabels: getExpiringSanitaryLabels } = useSanitaryLabels();
   const navigate = useNavigate();
   
   const todayProductions = productions.filter(p => {
@@ -112,11 +114,11 @@ export default function Dashboard() {
   // Use real production data for current productions
   const currentProductions = inProgressProductions.slice(0, 3);
 
-  // Get real expiring products from labels
-  const expiringLabels = getExpiringLabels().slice(0, 3);
-  const expiringProducts = expiringLabels.map(label => {
+  // Get real expiring sanitary labels
+  const expiringSanitaryLabels = getExpiringSanitaryLabels().slice(0, 3);
+  const expiringProducts = expiringSanitaryLabels.map(label => {
     const today = new Date();
-    const expiry = new Date(label.expiry_date);
+    const expiry = new Date(label.expiry_datetime);
     const daysUntilExpiry = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     
     let expiresAt = '';
@@ -137,9 +139,9 @@ export default function Dashboard() {
     }
     
     return {
-      name: `${label.product_name} - ${label.batch_code}`,
+      name: label.product_name,
       expiresAt,
-      quantity: `${label.package_size}g`,
+      quantity: label.conservation_type,
       severity
     };
   });
@@ -262,12 +264,12 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-warning" />
-                Produtos Vencendo
+                Etiquetas Sanitárias Vencendo
               </CardTitle>
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => navigate('/labels')}
+                onClick={() => navigate('/sanitary-labels')}
               >
                 <Eye className="w-4 h-4 mr-2" />
                 Ver Todos

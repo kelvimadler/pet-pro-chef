@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { useClients } from "@/hooks/useClients";
 import { useMenus } from "@/hooks/useMenus";
+import { Switch } from "@/components/ui/switch";
 import { 
   Plus, 
   Search, 
@@ -24,6 +25,79 @@ import {
   Printer
 } from "lucide-react";
 
+// Menu View Dialog Component
+function MenuViewDialog({ menu, clientName }: { menu: any; clientName: string }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="flex items-center gap-2">
+          <Eye className="w-4 h-4" />
+          Visualizar
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Utensils className="w-5 h-5 text-primary" />
+            {menu.name}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <h3 className="font-semibold text-foreground">Cliente</h3>
+              <p className="text-muted-foreground">{clientName}</p>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-foreground">Status</h3>
+              <Badge variant="outline" className={menu.is_active ? "bg-green-100 text-green-800 border-green-200" : "bg-gray-100 text-gray-800 border-gray-200"}>
+                {menu.is_active ? "Ativo" : "Inativo"}
+              </Badge>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-foreground">Quantidade Diária</h3>
+              <p className="text-muted-foreground">{menu.daily_food_amount}g</p>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-foreground">Refeições por Dia</h3>
+              <p className="text-muted-foreground">{menu.meals_per_day}</p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="font-semibold text-foreground">Ingredientes</h3>
+            <div className="space-y-2">
+              {menu.ingredients.map((ingredient: any, index: number) => (
+                <div key={index} className="flex justify-between items-center p-3 bg-accent/20 rounded-lg">
+                  <span className="font-medium">{ingredient.name}</span>
+                  <span className="text-muted-foreground">{ingredient.quantity}{ingredient.unit}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {menu.special_notes && (
+            <div className="space-y-2">
+              <h3 className="font-semibold text-foreground">Observações Especiais</h3>
+              <p className="text-muted-foreground bg-accent/20 p-3 rounded-lg">{menu.special_notes}</p>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <h3 className="font-semibold text-foreground">Informações</h3>
+            <div className="text-sm text-muted-foreground">
+              <p>Criado em: {new Date(menu.created_at).toLocaleDateString('pt-BR')}</p>
+              <p>Última atualização: {new Date(menu.updated_at).toLocaleDateString('pt-BR')}</p>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function Menus() {
   const { clients } = useClients();
   const { menus, loading, createMenu, updateMenu, deleteMenu, printMenu } = useMenus();
@@ -36,7 +110,9 @@ export default function Menus() {
     daily_food_amount: '',
     meals_per_day: '2',
     ingredients: [{ name: '', quantity: '', unit: 'g' }],
-    special_notes: ''
+    special_notes: '',
+    is_active: true,
+    recipe_file: null as File | null
   });
 
   const resetForm = () => {
@@ -46,7 +122,9 @@ export default function Menus() {
       daily_food_amount: '',
       meals_per_day: '2',
       ingredients: [{ name: '', quantity: '', unit: 'g' }],
-      special_notes: ''
+      special_notes: '',
+      is_active: true,
+      recipe_file: null
     });
     setEditingMenu(null);
   };
@@ -83,8 +161,8 @@ export default function Menus() {
       daily_food_amount: parseFloat(formData.daily_food_amount) || 0,
       meals_per_day: parseInt(formData.meals_per_day) || 2,
       ingredients: formData.ingredients,
-      special_notes: formData.special_notes,
-      is_active: true
+    special_notes: formData.special_notes,
+    is_active: formData.is_active
     };
 
     try {
@@ -109,7 +187,9 @@ export default function Menus() {
       daily_food_amount: menu.daily_food_amount?.toString() || '',
       meals_per_day: menu.meals_per_day?.toString() || '2',
       ingredients: menu.ingredients || [{ name: '', quantity: '', unit: 'g' }],
-      special_notes: menu.special_notes || ''
+      special_notes: menu.special_notes || '',
+      is_active: menu.is_active ?? true,
+      recipe_file: null
     });
     setShowDialog(true);
   };
@@ -290,12 +370,29 @@ export default function Menus() {
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            console.log('Arquivo selecionado:', file.name);
-                            // Implementar upload aqui
+                            setFormData(prev => ({ ...prev, recipe_file: file }));
                           }
                         }}
                       />
+                      {formData.recipe_file && (
+                        <p className="text-sm text-green-600 mt-2">
+                          Arquivo selecionado: {formData.recipe_file.name}
+                        </p>
+                      )}
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="flex items-center justify-between">
+                      <span>Status do Cardápio</span>
+                      <Switch 
+                        checked={formData.is_active}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+                      />
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      {formData.is_active ? "Cardápio ativo e disponível" : "Cardápio inativo"}
+                    </p>
                   </div>
 
               <div className="flex gap-4 pt-4">
@@ -432,10 +529,7 @@ export default function Menus() {
                 </div>
 
                 <div className="flex gap-2 pt-2 border-t border-border/50">
-                  <Button variant="outline" size="sm" className="flex items-center gap-2">
-                    <Eye className="w-4 h-4" />
-                    Visualizar
-                  </Button>
+                  <MenuViewDialog menu={menu} clientName={getClientName(menu.client_id)} />
                   <Button 
                     variant="outline" 
                     size="sm" 
