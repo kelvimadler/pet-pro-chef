@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useProductions } from "@/hooks/useProductions";
 import { useIngredients } from "@/hooks/useIngredients";
 import { useClients } from "@/hooks/useClients";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { Suspense, lazy } from 'react';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -69,6 +69,26 @@ export default function Reports() {
     name: protein,
     value: count
   }));
+
+  // Lazy load Recharts components to avoid build issues
+  const RechartsComponents = lazy(() => 
+    import('recharts').then(module => ({
+      default: {
+        BarChart: module.BarChart,
+        Bar: module.Bar,
+        XAxis: module.XAxis,
+        YAxis: module.YAxis,
+        CartesianGrid: module.CartesianGrid,
+        Tooltip: module.Tooltip,
+        ResponsiveContainer: module.ResponsiveContainer,
+        PieChart: module.PieChart,
+        Pie: module.Pie,
+        Cell: module.Cell
+      }
+    })).catch(() => ({
+      default: null
+    }))
+  );
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
@@ -251,15 +271,16 @@ export default function Reports() {
           </CardHeader>
           <CardContent>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="producoes" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
+              <Suspense fallback={
+                <div className="h-full bg-gradient-natural rounded-lg flex items-center justify-center">
+                  <div className="text-center">
+                    <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-muted-foreground">Carregando gráfico...</p>
+                  </div>
+                </div>
+              }>
+                <RechartsComponents />
+              </Suspense>
             </div>
           </CardContent>
         </Card>
@@ -270,25 +291,31 @@ export default function Reports() {
           </CardHeader>
           <CardContent>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={proteinData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {proteinData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+              <div className="space-y-3">
+                {proteinData.slice(0, 5).map((protein, index) => (
+                  <div key={protein.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                      />
+                      <span className="text-sm font-medium">{protein.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-20 h-2 bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className="h-full rounded-full" 
+                          style={{ 
+                            width: `${(protein.value / Math.max(...proteinData.map(p => p.value))) * 100}%`,
+                            backgroundColor: COLORS[index % COLORS.length]
+                          }}
+                        />
+                      </div>
+                      <span className="text-sm font-medium w-8 text-right">{protein.value}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
