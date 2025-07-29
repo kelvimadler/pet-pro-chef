@@ -98,17 +98,14 @@ export function ProductionSteps({ production }: ProductionStepsProps) {
   };
 
   return (
-    <div className="w-full relative">
-      {/* Progress Bar Background */}
-      <div className="absolute top-4 left-0 right-0 h-1 bg-muted rounded-full" />
-      
-      <div className="flex items-start justify-between relative">
+    <div className="w-full relative px-2">
+      <div className="flex items-center justify-between relative">
         {steps.map((step, index) => (
-          <div key={step.id} className="flex flex-col items-center relative z-10 flex-1">
+          <div key={step.id} className="flex flex-col items-center relative z-10">
             {/* Step Circle */}
             <div
               className={cn(
-                "w-8 h-8 md:w-10 md:h-10 rounded-full border-2 flex items-center justify-center transition-all duration-500 shadow-lg",
+                "w-8 h-8 md:w-10 md:h-10 rounded-full border-2 flex items-center justify-center transition-all duration-500 shadow-lg relative z-20",
                 getStepColors(step.status),
                 step.status === 'current' && "ring-4 ring-primary/30 animate-pulse"
               )}
@@ -129,23 +126,18 @@ export function ProductionSteps({ production }: ProductionStepsProps) {
                 {step.description}
               </p>
             </div>
-            
-            {/* Connector Line */}
-            {index < steps.length - 1 && (
-              <div
-                className={cn(
-                  "absolute top-4 h-1 rounded-full transition-all duration-500 z-0",
-                  getConnectorColor(index)
-                )}
-                style={{
-                  left: '50%',
-                  right: `-${100 / steps.length}%`,
-                  width: `${100 / steps.length}%`
-                }}
-              />
-            )}
           </div>
         ))}
+        
+        {/* Progress Bar */}
+        <div className="absolute top-4 left-4 right-4 h-2 bg-muted rounded-full z-0">
+          <div 
+            className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-1000 ease-out"
+            style={{
+              width: `${(steps.filter(s => s.status === 'completed').length / (steps.length - 1)) * 100}%`
+            }}
+          />
+        </div>
       </div>
     </div>
   );
