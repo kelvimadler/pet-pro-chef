@@ -64,7 +64,7 @@ export function useNotifications() {
   const createNotification = async (data: {
     title: string;
     message: string;
-    type: 'expiry' | 'stock' | 'production' | 'general';
+    type: 'expiry' | 'stock' | 'production' | 'general' | 'sanitary_expiry';
     related_id?: string;
   }) => {
     if (!user) return;

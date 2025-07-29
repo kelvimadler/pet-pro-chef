@@ -95,15 +95,15 @@ export default function Reports() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Relatórios</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Relatórios</h1>
           <p className="text-muted-foreground mt-1">
             Análises e métricas da produção
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button variant="outline" className="flex items-center gap-2 justify-center">
             <Filter className="w-4 h-4" />
             Filtrar Período
           </Button>
@@ -115,7 +115,7 @@ export default function Reports() {
       </div>
 
       {/* Report Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card className="shadow-card-hover border-border/50">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -176,7 +176,7 @@ export default function Reports() {
       </div>
 
       {/* Additional Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         <Card className="shadow-card-hover border-border/50">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
@@ -264,7 +264,7 @@ export default function Reports() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card className="shadow-card-hover border-border/50">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">Produções por Mês</CardTitle>

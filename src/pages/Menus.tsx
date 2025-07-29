@@ -213,9 +213,9 @@ export default function Menus() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Cardápios Personalizados</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Cardápios Personalizados</h1>
           <p className="text-muted-foreground mt-1">
             Dietas específicas para cada pet
           </p>
@@ -224,7 +224,7 @@ export default function Menus() {
           <DialogTrigger asChild>
             <Button 
               onClick={resetForm}
-              className="bg-gradient-primary hover:scale-105 transition-transform shadow-elegant"
+              className="bg-gradient-primary hover:scale-105 transition-transform shadow-elegant w-full sm:w-auto"
             >
               <Plus className="w-4 h-4 mr-2" />
               Novo Cardápio
@@ -237,7 +237,7 @@ export default function Menus() {
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Nome do Cardápio *</Label>
                   <Input
@@ -264,7 +264,7 @@ export default function Menus() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="daily-amount">Quantidade Diária (g) *</Label>
                   <Input
@@ -301,15 +301,15 @@ export default function Menus() {
                 </div>
                 
                 {formData.ingredients.map((ingredient, index) => (
-                  <div key={index} className="grid grid-cols-12 gap-2 items-end">
-                    <div className="col-span-5">
+                  <div key={index} className="flex flex-col sm:grid sm:grid-cols-12 gap-2 space-y-2 sm:space-y-0 sm:items-end">
+                    <div className="sm:col-span-5">
                       <Input
                         placeholder="Nome do ingrediente"
                         value={ingredient.name}
                         onChange={(e) => updateIngredient(index, 'name', e.target.value)}
                       />
                     </div>
-                    <div className="col-span-3">
+                    <div className="sm:col-span-3">
                       <Input
                         type="number"
                         placeholder="Quantidade"
@@ -317,7 +317,7 @@ export default function Menus() {
                         onChange={(e) => updateIngredient(index, 'quantity', e.target.value)}
                       />
                     </div>
-                    <div className="col-span-2">
+                    <div className="sm:col-span-2">
                       <Select value={ingredient.unit} onValueChange={(value) => updateIngredient(index, 'unit', value)}>
                         <SelectTrigger>
                           <SelectValue />
@@ -331,13 +331,14 @@ export default function Menus() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="col-span-2">
+                    <div className="sm:col-span-2">
                       <Button 
                         type="button" 
                         variant="outline" 
                         size="sm"
                         onClick={() => removeIngredient(index)}
                         disabled={formData.ingredients.length <= 1}
+                        className="w-full sm:w-auto"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -395,17 +396,18 @@ export default function Menus() {
                     </p>
                   </div>
 
-              <div className="flex gap-4 pt-4">
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setShowDialog(false)}
+                  className="order-2 sm:order-1"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-gradient-primary hover:scale-105 transition-transform shadow-elegant"
+                  className="bg-gradient-primary hover:scale-105 transition-transform shadow-elegant order-1 sm:order-2"
                 >
                   {editingMenu ? "Atualizar" : "Criar"} Cardápio
                 </Button>

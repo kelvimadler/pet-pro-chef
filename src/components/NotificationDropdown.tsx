@@ -18,6 +18,8 @@ export function NotificationDropdown() {
         return '📦';
       case 'production':
         return '🏭';
+      case 'sanitary_expiry':
+        return '🏷️';
       default:
         return '📋';
     }
@@ -31,6 +33,8 @@ export function NotificationDropdown() {
         return 'text-yellow-600';
       case 'production':
         return 'text-blue-600';
+      case 'sanitary_expiry':
+        return 'text-purple-600';
       default:
         return 'text-gray-600';
     }

@@ -3,7 +3,9 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useStockMonitor } from "@/hooks/useStockMonitor";
+import { useSanitaryNotifications } from "@/hooks/useSanitaryNotifications";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,6 +13,7 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   useStockMonitor();
+  useSanitaryNotifications();
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -35,6 +38,7 @@ export function Layout({ children }: LayoutProps) {
               </div>
               
               <div className="flex items-center gap-3">
+                <ThemeToggle />
                 <NotificationDropdown />
               </div>
             </div>
