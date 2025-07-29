@@ -2,39 +2,70 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Sistema de Design para Fábrica de Petiscos Naturais 
+Tema inspirado na natureza, saúde e bem-estar dos pets
+Todas as cores em HSL para máxima flexibilidade
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Fundo principal - branco natural */
+    --background: 48 20% 98%;
+    --foreground: 25 35% 15%;
 
+    /* Cards e superfícies */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 25 35% 15%;
 
+    /* Popovers e overlays */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 25 35% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Verde natural como cor primária */
+    --primary: 142 76% 36%;
+    --primary-foreground: 0 0% 98%;
+    --primary-glow: 142 60% 55%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Azul confiança como secundária */
+    --secondary: 210 100% 96%;
+    --secondary-foreground: 210 100% 20%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Tons neutros suaves */
+    --muted: 48 20% 95%;
+    --muted-foreground: 25 20% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Verde claro para acentos */
+    --accent: 142 40% 92%;
+    --accent-foreground: 142 76% 25%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Vermelho para alertas e destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Amarelo/laranja para avisos */
+    --warning: 38 100% 55%;
+    --warning-foreground: 0 0% 100%;
+
+    /* Bordas e inputs */
+    --border: 48 20% 88%;
+    --input: 48 20% 95%;
+    --ring: 142 76% 36%;
+
+    /* Gradientes naturais */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-natural: linear-gradient(135deg, hsl(48 40% 92%), hsl(142 30% 85%));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 60% 55%));
+    --gradient-warning: linear-gradient(135deg, hsl(38 100% 55%), hsl(45 100% 65%));
+    --gradient-danger: linear-gradient(135deg, hsl(0 84% 60%), hsl(15 80% 65%));
+
+    /* Sombras elegantes */
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.15);
+    --shadow-card: 0 4px 20px -4px hsl(25 35% 15% / 0.1);
+    --shadow-glow: 0 0 30px hsl(var(--primary-glow) / 0.3);
+
+    /* Animações suaves */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
     --radius: 0.5rem;
 
