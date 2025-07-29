@@ -24,7 +24,7 @@ export default function Dashboard() {
   const { getLowStockIngredients } = useIngredients();
   const { unreadCount } = useNotifications();
   const { getExpiringLabels } = useLabels();
-  const { getExpiringLabels: getExpiringSanitaryLabels } = useSanitaryLabels();
+  const { getExpiringLabels: getExpiringSanitaryLabels, getExpiredLabels } = useSanitaryLabels();
   const navigate = useNavigate();
   
   const todayProductions = productions.filter(p => {
@@ -114,8 +114,9 @@ export default function Dashboard() {
   // Use real production data for current productions
   const currentProductions = inProgressProductions.slice(0, 3);
 
-  // Get real expiring sanitary labels
-  const expiringSanitaryLabels = getExpiringSanitaryLabels().slice(0, 3);
+  // Get real expiring sanitary labels (including expired ones)
+  const allSanitaryLabels = [...getExpiringSanitaryLabels(), ...getExpiredLabels()];
+  const expiringSanitaryLabels = allSanitaryLabels.slice(0, 3);
   const expiringProducts = expiringSanitaryLabels.map(label => {
     const today = new Date();
     const expiry = new Date(label.expiry_datetime);
@@ -276,8 +277,14 @@ export default function Dashboard() {
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {expiringProducts.map((product, index) => (
+           <CardContent className="space-y-4">
+            {expiringProducts.length === 0 ? (
+              <div className="text-center py-8">
+                <AlertTriangle className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-muted-foreground text-sm">Nenhuma etiqueta vencendo</p>
+              </div>
+            ) : (
+              expiringProducts.map((product, index) => (
               <div
                 key={index}
                 className="p-4 rounded-lg border border-border/50 bg-accent/20 hover:bg-accent/40 transition-colors"
@@ -297,7 +304,8 @@ export default function Dashboard() {
                   {product.quantity}
                 </p>
               </div>
-            ))}
+            ))
+            )}
           </CardContent>
         </Card>
       </div>

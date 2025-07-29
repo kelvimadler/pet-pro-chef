@@ -156,6 +156,7 @@ export function useSanitaryLabels() {
             <div class="dates">
               <div>Validade: ${format(new Date(labelData.expiry_datetime), "dd/MM/yyyy HH:mm")}</div>
               <div>Original: ${format(new Date(labelData.original_expiry_date), "dd/MM/yyyy")}</div>
+              <div>Criado em: ${format(new Date(labelData.created_at), "dd/MM/yyyy HH:mm")}</div>
             </div>
             <img src="${qrCodeDataURL}" class="qr-code" alt="QR Code" />
             ${labelData.observations ? `<div class="observations">${labelData.observations}</div>` : ''}

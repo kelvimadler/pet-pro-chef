@@ -17,6 +17,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/hooks/useNotifications";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { User, UserPlus } from "lucide-react";
 
 import {
   Sidebar,
@@ -113,16 +122,36 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border/50 p-2">
-        <Button
-          variant="ghost"
-          size={collapsed ? "icon" : "default"}
-          onClick={handleSignOut}
-          className="w-full justify-start text-muted-foreground hover:text-foreground"
-        >
-          <LogOut className={`w-4 h-4 ${!collapsed ? "mr-2" : ""}`} />
-          {!collapsed && "Sair"}
-        </Button>
+      <SidebarFooter className="border-t border-border/50 p-2 space-y-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size={collapsed ? "icon" : "default"}
+              className="w-full justify-start text-muted-foreground hover:text-foreground"
+            >
+              <User className={`w-4 h-4 ${!collapsed ? "mr-2" : ""}`} />
+              {!collapsed && "Perfil"}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => console.log('Abrir perfil')}>
+              <User className="w-4 h-4 mr-2" />
+              Perfil
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => console.log('Adicionar conta')}>
+              <UserPlus className="w-4 h-4 mr-2" />
+              Adicionar Nova Conta
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleSignOut}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarFooter>
     </Sidebar>
   );

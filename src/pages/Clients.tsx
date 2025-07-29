@@ -17,7 +17,8 @@ import {
   MapPin,
   Heart,
   Eye,
-  Edit
+  Edit,
+  X
 } from "lucide-react";
 
 export default function Clients() {
@@ -46,7 +47,8 @@ export default function Clients() {
     pet_name: '',
     pet_breed: '',
     pet_weight: '',
-    notes: ''
+    notes: '',
+    pets: [] as Array<{ name: string; breed: string; weight: number | null }>,
   });
 
   // Only use real clients from Supabase
@@ -92,7 +94,8 @@ export default function Clients() {
       pet_name: client.pet_name || '',
       pet_breed: client.pet_breed || '',
       pet_weight: client.pet_weight?.toString() || '',
-      notes: client.notes || ''
+      notes: client.notes || '',
+      pets: []
     });
     setEditDialog(true);
   };
@@ -495,6 +498,88 @@ export default function Clients() {
                 />
               </div>
             </div>
+            
+            {/* Multiple pets section */}
+            <div className="border-t pt-4">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-medium flex items-center gap-2">
+                  <Heart className="w-4 h-4" />
+                  Pets Adicionais
+                </h4>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setEditFormData({
+                      ...editFormData,
+                      pets: [...(editFormData.pets || []), { name: '', breed: '', weight: null }]
+                    });
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Adicionar Pet
+                </Button>
+              </div>
+              
+              {/* Multiple pets */}
+              {editFormData.pets && editFormData.pets.map((pet, index) => (
+                <div key={index} className="space-y-4 p-4 border rounded-lg relative mb-4">
+                  <div className="flex justify-between items-center">
+                    <h5 className="font-medium text-sm">Pet {index + 1}</h5>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const newPets = editFormData.pets?.filter((_, i) => i !== index) || [];
+                        setEditFormData({ ...editFormData, pets: newPets });
+                      }}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Nome do Pet</Label>
+                      <Input
+                        value={pet.name || ''}
+                        onChange={(e) => {
+                          const newPets = [...(editFormData.pets || [])];
+                          newPets[index] = { ...pet, name: e.target.value };
+                          setEditFormData({ ...editFormData, pets: newPets });
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Raça</Label>
+                      <Input
+                        value={pet.breed || ''}
+                        onChange={(e) => {
+                          const newPets = [...(editFormData.pets || [])];
+                          newPets[index] = { ...pet, breed: e.target.value };
+                          setEditFormData({ ...editFormData, pets: newPets });
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Peso (kg)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={pet.weight || ''}
+                      onChange={(e) => {
+                        const newPets = [...(editFormData.pets || [])];
+                        newPets[index] = { ...pet, weight: parseFloat(e.target.value) || null };
+                        setEditFormData({ ...editFormData, pets: newPets });
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            
             <div className="space-y-2">
               <Label htmlFor="edit-notes">Observações</Label>
               <Textarea

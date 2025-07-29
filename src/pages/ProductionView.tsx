@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useProductions } from "@/hooks/useProductions";
 import { ArrowLeft, ChefHat, Clock, Package, Edit, Play, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ProductionSteps } from "@/components/ProductionSteps";
 
 export default function ProductionView() {
   const { id } = useParams();
@@ -111,6 +112,19 @@ export default function ProductionView() {
           {getStatusLabel(production.status)}
         </Badge>
       </div>
+
+      {/* Production Steps */}
+      <Card className="shadow-card-hover border-border/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="w-5 h-5 text-primary" />
+            Progresso da Produção
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-8">
+          <ProductionSteps production={production} />
+        </CardContent>
+      </Card>
 
       {/* Production Details */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
