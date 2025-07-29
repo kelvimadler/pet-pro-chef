@@ -72,6 +72,11 @@ function AppContent() {
           <Layout><ProductionView /></Layout>
         </ProtectedRoute>
       } />
+      <Route path="/productions/edit/:id" element={
+        <ProtectedRoute>
+          <Layout><NewProduction /></Layout>
+        </ProtectedRoute>
+      } />
       <Route path="/menus" element={
         <ProtectedRoute>
           <Layout><Menus /></Layout>
