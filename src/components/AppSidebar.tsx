@@ -12,7 +12,7 @@ import {
   Bell,
   Thermometer
 } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/hooks/useNotifications";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +56,7 @@ const menuItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
   const { signOut } = useAuth();
   const { unreadCount } = useNotifications();
@@ -137,11 +138,11 @@ export function AppSidebar() {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => console.log('Abrir perfil')}>
+            <DropdownMenuItem onClick={() => navigate('/settings')}>
               <User className="w-4 h-4 mr-2" />
               Perfil
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => console.log('Adicionar conta')}>
+            <DropdownMenuItem onClick={() => navigate('/auth')}>
               <UserPlus className="w-4 h-4 mr-2" />
               Adicionar Nova Conta
             </DropdownMenuItem>

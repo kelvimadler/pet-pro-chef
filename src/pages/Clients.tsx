@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useClients } from "@/hooks/useClients";
+import { usePets } from "@/hooks/usePets";
 import { Switch } from "@/components/ui/switch";
 import { 
   Users, 
@@ -23,6 +24,7 @@ import {
 
 export default function Clients() {
   const { clients, loading, createClient, deleteClient, updateClient } = useClients();
+  const { createPet } = usePets();
   const [searchTerm, setSearchTerm] = useState("");
   const [showDialog, setShowDialog] = useState(false);
   const [viewDialog, setViewDialog] = useState(false);
@@ -76,9 +78,31 @@ export default function Clients() {
     e.preventDefault();
     if (!selectedClient) return;
     
+    // Filter out empty pets before saving
+    const validPets = editFormData.pets.filter(pet => 
+      pet.name.trim() !== '' && pet.breed.trim() !== ''
+    );
+    
+    // Save additional pets to pets table
+    for (const pet of validPets) {
+      await createPet({
+        client_id: selectedClient.id,
+        name: pet.name,
+        breed: pet.breed,
+        weight: pet.weight,
+        notes: ''
+      });
+    }
+    
     await updateClient(selectedClient.id, {
-      ...editFormData,
-      pet_weight: editFormData.pet_weight ? parseFloat(editFormData.pet_weight) : null
+      name: editFormData.name,
+      email: editFormData.email,
+      phone: editFormData.phone,
+      address: editFormData.address,
+      pet_name: editFormData.pet_name,
+      pet_breed: editFormData.pet_breed,
+      pet_weight: editFormData.pet_weight ? parseFloat(editFormData.pet_weight) : null,
+      notes: editFormData.notes
     });
     setEditDialog(false);
     setSelectedClient(null);

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useProductions } from "@/hooks/useProductions";
 import { useProducts } from "@/hooks/useProducts";
 import { useNavigate } from "react-router-dom";
+import { ProductionSteps } from "@/components/ProductionSteps";
 import { 
   Plus, 
   Search, 
@@ -186,6 +187,16 @@ export default function Productions() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Production Steps */}
+                <div className="bg-muted/20 rounded-lg p-4">
+                  <div className="mb-2">
+                    <h4 className="text-sm font-medium text-muted-foreground mb-3">Progresso da Produção</h4>
+                  </div>
+                  <div className="scale-75 origin-left">
+                    <ProductionSteps production={production} />
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-muted-foreground">
