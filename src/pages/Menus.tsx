@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { useClients } from "@/hooks/useClients";
+import { useMenus } from "@/hooks/useMenus";
 import { 
   Plus, 
   Search, 
@@ -19,15 +20,16 @@ import {
   Upload,
   Eye,
   Edit,
-  Trash2
+  Trash2,
+  Printer
 } from "lucide-react";
 
 export default function Menus() {
   const { clients } = useClients();
+  const { menus, loading, createMenu, updateMenu, deleteMenu, printMenu } = useMenus();
   const [searchTerm, setSearchTerm] = useState("");
   const [showDialog, setShowDialog] = useState(false);
   const [editingMenu, setEditingMenu] = useState<any>(null);
-  const [menus, setMenus] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     client_id: '',
@@ -76,22 +78,27 @@ export default function Menus() {
     e.preventDefault();
     
     const menuData = {
-      ...formData,
-      id: editingMenu?.id || Date.now().toString(),
+      name: formData.name,
+      client_id: formData.client_id,
       daily_food_amount: parseFloat(formData.daily_food_amount) || 0,
       meals_per_day: parseInt(formData.meals_per_day) || 2,
-      is_active: true,
-      created_at: editingMenu?.created_at || new Date().toISOString()
+      ingredients: formData.ingredients,
+      special_notes: formData.special_notes,
+      is_active: true
     };
 
-    if (editingMenu) {
-      setMenus(prev => prev.map(menu => menu.id === editingMenu.id ? menuData : menu));
-    } else {
-      setMenus(prev => [menuData, ...prev]);
+    try {
+      if (editingMenu) {
+        await updateMenu(editingMenu.id, menuData);
+      } else {
+        await createMenu(menuData);
+      }
+      
+      setShowDialog(false);
+      resetForm();
+    } catch (error) {
+      console.error('Error saving menu:', error);
     }
-    
-    setShowDialog(false);
-    resetForm();
   };
 
   const handleEdit = (menu: any) => {
@@ -107,9 +114,9 @@ export default function Menus() {
     setShowDialog(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Tem certeza que deseja remover este cardápio?")) {
-      setMenus(prev => prev.filter(menu => menu.id !== id));
+      await deleteMenu(id);
     }
   };
 
@@ -438,8 +445,13 @@ export default function Menus() {
                     <Edit className="w-4 h-4" />
                     Editar
                   </Button>
-                  <Button variant="outline" size="sm" className="flex items-center gap-2">
-                    <FileText className="w-4 h-4" />
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => printMenu(menu)}
+                    className="flex items-center gap-2"
+                  >
+                    <Printer className="w-4 h-4" />
                     Imprimir
                   </Button>
                   <Button 

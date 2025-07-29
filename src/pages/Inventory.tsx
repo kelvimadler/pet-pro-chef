@@ -423,6 +423,21 @@ export default function Inventory() {
                           <Truck className="w-4 h-4" />
                           Entrada Estoque
                         </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full flex items-center gap-2 text-red-600 hover:text-red-700"
+                          onClick={() => {
+                            const quantity = prompt('Quantidade a subtrair:');
+                            if (quantity) {
+                              const newStock = Math.max(0, (ingredient.current_stock || 0) - parseFloat(quantity));
+                              updateIngredient(ingredient.id, { current_stock: newStock });
+                            }
+                          }}
+                        >
+                          <Truck className="w-4 h-4" />
+                          Saída Estoque
+                        </Button>
                         <div className="flex gap-2">
                           <Button 
                             variant="outline" 
