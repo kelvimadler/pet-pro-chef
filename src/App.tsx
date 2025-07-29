@@ -14,6 +14,7 @@ import Clients from "./pages/Clients";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
+import NewProduction from "./pages/NewProduction";
 import NotFound from "./pages/NotFound";
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -58,6 +59,11 @@ function AppContent() {
       <Route path="/productions" element={
         <ProtectedRoute>
           <Layout><Productions /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/productions/new" element={
+        <ProtectedRoute>
+          <Layout><NewProduction /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/menus" element={
