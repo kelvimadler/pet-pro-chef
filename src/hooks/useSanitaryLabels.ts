@@ -90,8 +90,14 @@ export function useSanitaryLabels() {
     }
   };
 
-  const printLabel = (labelData: SanitaryLabel) => {
-    // Create a new window for printing
+  const printLabel = async (labelData: SanitaryLabel) => {
+    // Create QR code first
+    const QRCode = (await import('qrcode')).default;
+    const qrCodeDataURL = await QRCode.toDataURL(
+      JSON.stringify({ id: labelData.id, type: 'sanitary_label' }), 
+      { width: 100, margin: 1 }
+    );
+
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
@@ -114,15 +120,11 @@ export function useSanitaryLabels() {
               .product-name { font-weight: bold; font-size: 12px; margin-bottom: 4px; }
               .conservation { font-size: 11px; margin-bottom: 4px; }
               .dates { margin-bottom: 4px; }
-              .qr-placeholder { 
-                width: 20mm; 
-                height: 20mm; 
-                border: 1px solid #ccc; 
+              .qr-code { 
+                width: 25mm; 
+                height: 25mm; 
                 margin: 4px auto; 
-                display: flex; 
-                align-items: center; 
-                justify-content: center;
-                font-size: 8px;
+                display: block;
               }
               .observations { font-size: 9px; background: #f5f5f5; padding: 2px; margin-top: 4px; }
             }
@@ -138,15 +140,11 @@ export function useSanitaryLabels() {
             .product-name { font-weight: bold; font-size: 14px; margin-bottom: 6px; }
             .conservation { font-size: 12px; margin-bottom: 6px; }
             .dates { margin-bottom: 6px; font-size: 10px; }
-            .qr-placeholder { 
-              width: 25mm; 
-              height: 25mm; 
-              border: 1px solid #ccc; 
+            .qr-code { 
+              width: 30mm; 
+              height: 30mm; 
               margin: 6px auto; 
-              display: flex; 
-              align-items: center; 
-              justify-content: center;
-              background: #f9f9f9;
+              display: block;
             }
             .observations { font-size: 10px; background: #f5f5f5; padding: 4px; margin-top: 6px; border-radius: 2px; }
           </style>
@@ -159,7 +157,7 @@ export function useSanitaryLabels() {
               <div>Validade: ${format(new Date(labelData.expiry_datetime), "dd/MM/yyyy HH:mm")}</div>
               <div>Original: ${format(new Date(labelData.original_expiry_date), "dd/MM/yyyy")}</div>
             </div>
-            <div class="qr-placeholder">QR Code</div>
+            <img src="${qrCodeDataURL}" class="qr-code" alt="QR Code" />
             ${labelData.observations ? `<div class="observations">${labelData.observations}</div>` : ''}
           </div>
           <script>

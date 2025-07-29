@@ -17,30 +17,39 @@ export function QRCodeReader({ onScan, isOpen, onClose }: QRCodeReaderProps) {
 
   useEffect(() => {
     if (isOpen && videoRef.current) {
-      const qrScanner = new QrScanner(
-        videoRef.current,
-        (result) => {
-          onScan(result.data);
-          onClose();
-        },
-        {
-          highlightScanRegion: true,
-          highlightCodeOutline: true,
-        }
-      );
+      // Request camera permissions first
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(() => {
+          const qrScanner = new QrScanner(
+            videoRef.current!,
+            (result) => {
+              onScan(result.data);
+              onClose();
+            },
+            {
+              highlightScanRegion: true,
+              highlightCodeOutline: true,
+              preferredCamera: 'environment'
+            }
+          );
 
-      QrScanner.hasCamera().then(setHasCamera);
+          qrScanner.start().catch(err => {
+            console.error('Error starting QR scanner:', err);
+            setHasCamera(false);
+          });
 
-      qrScanner.start().catch(err => {
-        console.error('Error starting QR scanner:', err);
-        setHasCamera(false);
-      });
-
-      setScanner(qrScanner);
+          setScanner(qrScanner);
+        })
+        .catch(err => {
+          console.error('Camera permission denied:', err);
+          setHasCamera(false);
+        });
 
       return () => {
-        qrScanner.stop();
-        qrScanner.destroy();
+        if (scanner) {
+          scanner.stop();
+          scanner.destroy();
+        }
       };
     }
   }, [isOpen, onScan, onClose]);

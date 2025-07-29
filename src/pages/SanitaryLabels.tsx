@@ -169,18 +169,18 @@ export default function SanitaryLabels() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Etiquetas Sanitárias</h1>
           <p className="text-muted-foreground mt-1">
             Controle de validade para produtos da geladeira
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Button 
             variant="outline"
             onClick={() => setShowQRReader(true)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-full sm:w-auto"
           >
             <Camera className="w-4 h-4" />
             Ler QR Code
@@ -190,7 +190,7 @@ export default function SanitaryLabels() {
               setEditingLabel(null);
               setShowForm(!showForm);
             }}
-            className="bg-gradient-primary hover:scale-105 transition-transform shadow-elegant"
+            className="bg-gradient-primary hover:scale-105 transition-transform shadow-elegant w-full sm:w-auto"
           >
             <Plus className="w-4 h-4 mr-2" />
             Nova Etiqueta
