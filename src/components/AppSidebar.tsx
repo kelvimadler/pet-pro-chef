@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { 
   LayoutDashboard, 
   PackageSearch, 
@@ -26,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User, UserPlus } from "lucide-react";
+import { AddAccountDialog } from "@/components/AddAccountDialog";
 
 import {
   Sidebar,
@@ -60,6 +62,7 @@ export function AppSidebar() {
   const currentPath = location.pathname;
   const { signOut } = useAuth();
   const { unreadCount } = useNotifications();
+  const [showAddAccountDialog, setShowAddAccountDialog] = useState(false);
   
   const collapsed = state === "collapsed";
 
@@ -142,7 +145,7 @@ export function AppSidebar() {
               <User className="w-4 h-4 mr-2" />
               Perfil
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/auth')}>
+            <DropdownMenuItem onClick={() => setShowAddAccountDialog(true)}>
               <UserPlus className="w-4 h-4 mr-2" />
               Adicionar Nova Conta
             </DropdownMenuItem>
@@ -154,6 +157,11 @@ export function AppSidebar() {
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarFooter>
+      
+      <AddAccountDialog 
+        open={showAddAccountDialog} 
+        onOpenChange={setShowAddAccountDialog} 
+      />
     </Sidebar>
   );
 }

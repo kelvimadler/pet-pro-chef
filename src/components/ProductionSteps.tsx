@@ -68,22 +68,22 @@ export function ProductionSteps({ production }: ProductionStepsProps) {
   const getStepIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Check className="w-5 h-5 text-white" />;
+        return <Check className="w-3 h-3 md:w-4 md:h-4 text-white" />;
       case 'current':
-        return <Clock className="w-5 h-5 text-primary animate-pulse" />;
+        return <Clock className="w-3 h-3 md:w-4 md:h-4 text-white animate-pulse" />;
       default:
-        return <Circle className="w-5 h-5 text-muted-foreground" />;
+        return <Circle className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground" />;
     }
   };
 
   const getStepColors = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-500 border-green-500';
+        return 'bg-gradient-to-r from-green-500 to-green-600 border-green-500 shadow-green-200';
       case 'current':
-        return 'bg-primary border-primary';
+        return 'bg-gradient-to-r from-primary to-primary-glow border-primary shadow-primary/30';
       default:
-        return 'bg-muted border-muted-foreground/20';
+        return 'bg-muted border-border';
     }
   };
 
@@ -98,31 +98,34 @@ export function ProductionSteps({ production }: ProductionStepsProps) {
   };
 
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-between relative">
+    <div className="w-full relative">
+      {/* Progress Bar Background */}
+      <div className="absolute top-4 left-0 right-0 h-1 bg-muted rounded-full" />
+      
+      <div className="flex items-start justify-between relative">
         {steps.map((step, index) => (
-          <div key={step.id} className="flex flex-col items-center relative z-10">
+          <div key={step.id} className="flex flex-col items-center relative z-10 flex-1">
             {/* Step Circle */}
             <div
               className={cn(
-                "w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-300",
+                "w-8 h-8 md:w-10 md:h-10 rounded-full border-2 flex items-center justify-center transition-all duration-500 shadow-lg",
                 getStepColors(step.status),
-                step.status === 'current' && "ring-4 ring-primary/20 shadow-lg"
+                step.status === 'current' && "ring-4 ring-primary/30 animate-pulse"
               )}
             >
               {getStepIcon(step.status)}
             </div>
             
             {/* Step Content */}
-            <div className="mt-4 text-center max-w-[120px]">
+            <div className="mt-2 text-center max-w-[80px] md:max-w-[120px]">
               <h3 className={cn(
-                "font-medium text-sm transition-colors",
-                step.status === 'current' ? "text-primary" : 
+                "font-semibold text-xs md:text-sm transition-all duration-300",
+                step.status === 'current' ? "text-primary scale-105" : 
                 step.status === 'completed' ? "text-green-600" : "text-muted-foreground"
               )}>
                 {step.title}
               </h3>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1 hidden md:block">
                 {step.description}
               </p>
             </div>
@@ -131,23 +134,19 @@ export function ProductionSteps({ production }: ProductionStepsProps) {
             {index < steps.length - 1 && (
               <div
                 className={cn(
-                  "absolute top-6 left-full w-[calc(100%-3rem)] h-0.5 transition-all duration-300",
+                  "absolute top-4 h-1 rounded-full transition-all duration-500 z-0",
                   getConnectorColor(index)
                 )}
                 style={{
-                  transform: 'translateX(-50%)',
                   left: '50%',
-                  right: 'auto',
-                  width: 'calc(100vw / 3 - 3rem)'
+                  right: `-${100 / steps.length}%`,
+                  width: `${100 / steps.length}%`
                 }}
               />
             )}
           </div>
         ))}
       </div>
-      
-      {/* Progress Bar Background */}
-      <div className="absolute top-6 left-6 right-6 h-0.5 bg-muted-foreground/10 -z-10" />
     </div>
   );
 }

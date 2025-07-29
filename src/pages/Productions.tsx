@@ -188,13 +188,11 @@ export default function Productions() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Production Steps */}
-                <div className="bg-muted/20 rounded-lg p-4">
-                  <div className="mb-2">
-                    <h4 className="text-sm font-medium text-muted-foreground mb-3">Progresso da Produção</h4>
+                <div className="bg-gradient-to-r from-muted/30 to-muted/10 rounded-xl p-3 md:p-4 border border-border/50">
+                  <div className="mb-3">
+                    <h4 className="text-xs md:text-sm font-medium text-muted-foreground mb-3">Progresso da Produção</h4>
                   </div>
-                  <div className="scale-75 origin-left">
-                    <ProductionSteps production={production} />
-                  </div>
+                  <ProductionSteps production={production} />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">

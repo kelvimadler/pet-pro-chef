@@ -36,19 +36,30 @@ export function Layout({ children }: LayoutProps) {
               
               <div className="flex items-center gap-3">
                 <NotificationDropdown />
-                <Button variant="outline" size="icon">
-                  <User className="w-4 h-4" />
-                </Button>
               </div>
             </div>
           </header>
           
           {/* Main Content */}
           <main className="flex-1 overflow-auto">
-            <div className="p-6">
+            <div className="p-4 md:p-6">
               {children}
             </div>
           </main>
+          
+          {/* Footer */}
+          <footer className="border-t border-border/50 bg-card/30 backdrop-blur-sm p-4">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                Feito com 
+                <span className="text-green-500 animate-pulse">♥</span> 
+                pela Wodev Digital
+              </div>
+              <div className="text-xs">
+                Versão 1.2.0 - Sistema de Gestão Industrial
+              </div>
+            </div>
+          </footer>
         </div>
       </div>
     </SidebarProvider>
