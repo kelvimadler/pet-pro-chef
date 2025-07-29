@@ -16,6 +16,7 @@ import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import NewProduction from "./pages/NewProduction";
+import EditProduction from "./pages/EditProduction";
 import ProductionView from "./pages/ProductionView";
 import NotFound from "./pages/NotFound";
 import { useEffect } from 'react';
@@ -75,7 +76,7 @@ function AppContent() {
       } />
       <Route path="/productions/edit/:id" element={
         <ProtectedRoute>
-          <Layout><NewProduction /></Layout>
+          <Layout><EditProduction /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/products" element={
