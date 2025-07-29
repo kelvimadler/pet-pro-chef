@@ -253,7 +253,7 @@ export default function SanitaryLabels() {
                         <span className="text-lg">{getConservationIcon(label.conservation_type)}</span>
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        {label.conservation_type} {label.printed && '• Impressa'}
+                        {label.conservation_type}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -320,11 +320,10 @@ export default function SanitaryLabels() {
                           variant="outline" 
                           size="sm" 
                           className="w-full flex items-center gap-2"
-                          onClick={() => printLabel(label.id)}
-                          disabled={label.printed}
+                          onClick={() => printLabel(label)}
                         >
                           <Printer className="w-4 h-4" />
-                          {label.printed ? "Impressa" : "Imprimir"}
+                          Imprimir
                         </Button>
                       </div>
                     </div>

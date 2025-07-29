@@ -38,7 +38,6 @@ const menuItems = [
   { title: "Produtos", url: "/products", icon: PackageSearch },
   { title: "Cardápios", url: "/menus", icon: Utensils },
   { title: "Estoque", url: "/inventory", icon: Package },
-  { title: "Etiquetas", url: "/labels", icon: QrCode },
   { title: "Etiquetas Sanitárias", url: "/sanitary-labels", icon: Thermometer },
   { title: "Clientes", url: "/clients", icon: Users },
   { title: "Relatórios", url: "/reports", icon: BarChart3 },

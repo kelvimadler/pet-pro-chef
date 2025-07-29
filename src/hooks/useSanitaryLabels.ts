@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
 export interface SanitaryLabel {
   id: string;
@@ -89,33 +90,100 @@ export function useSanitaryLabels() {
     }
   };
 
-  const printLabel = async (id: string) => {
-    if (!user) return;
+  const printLabel = (labelData: SanitaryLabel) => {
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
 
-    try {
-      const { error } = await supabase
-        .from('sanitary_labels')
-        .update({ printed: true })
-        .eq('id', id)
-        .eq('user_id', user.id);
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Etiqueta Sanitária - ${labelData.product_name}</title>
+          <style>
+            @media print {
+              body { margin: 0; padding: 10px; font-family: Arial, sans-serif; }
+              .label { 
+                width: 60mm; 
+                background: white; 
+                border: 1px solid #000; 
+                padding: 8px; 
+                text-align: center;
+                font-size: 10px;
+              }
+              .product-name { font-weight: bold; font-size: 12px; margin-bottom: 4px; }
+              .conservation { font-size: 11px; margin-bottom: 4px; }
+              .dates { margin-bottom: 4px; }
+              .qr-placeholder { 
+                width: 20mm; 
+                height: 20mm; 
+                border: 1px solid #ccc; 
+                margin: 4px auto; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center;
+                font-size: 8px;
+              }
+              .observations { font-size: 9px; background: #f5f5f5; padding: 2px; margin-top: 4px; }
+            }
+            body { font-family: Arial, sans-serif; }
+            .label { 
+              width: 60mm; 
+              background: white; 
+              border: 2px solid #000; 
+              padding: 10px; 
+              text-align: center;
+              margin: 20px auto;
+            }
+            .product-name { font-weight: bold; font-size: 14px; margin-bottom: 6px; }
+            .conservation { font-size: 12px; margin-bottom: 6px; }
+            .dates { margin-bottom: 6px; font-size: 10px; }
+            .qr-placeholder { 
+              width: 25mm; 
+              height: 25mm; 
+              border: 1px solid #ccc; 
+              margin: 6px auto; 
+              display: flex; 
+              align-items: center; 
+              justify-content: center;
+              background: #f9f9f9;
+            }
+            .observations { font-size: 10px; background: #f5f5f5; padding: 4px; margin-top: 6px; border-radius: 2px; }
+          </style>
+        </head>
+        <body>
+          <div class="label">
+            <div class="product-name">${labelData.product_name}</div>
+            <div class="conservation">${getConservationIcon(labelData.conservation_type)} ${labelData.conservation_type}</div>
+            <div class="dates">
+              <div>Validade: ${format(new Date(labelData.expiry_datetime), "dd/MM/yyyy HH:mm")}</div>
+              <div>Original: ${format(new Date(labelData.original_expiry_date), "dd/MM/yyyy")}</div>
+            </div>
+            <div class="qr-placeholder">QR Code</div>
+            ${labelData.observations ? `<div class="observations">${labelData.observations}</div>` : ''}
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+              window.onafterprint = function() {
+                window.close();
+              };
+            };
+          </script>
+        </body>
+      </html>
+    `;
 
-      if (error) throw error;
-      
-      setLabels(prev => prev.map(label => 
-        label.id === id ? { ...label, printed: true } : label
-      ));
-      
-      toast({
-        title: "Etiqueta impressa!",
-        description: "A etiqueta foi marcada como impressa.",
-      });
-    } catch (error) {
-      console.error('Erro ao marcar etiqueta como impressa:', error);
-      toast({
-        title: "Erro ao imprimir",
-        description: "Não foi possível marcar a etiqueta como impressa.",
-        variant: "destructive",
-      });
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+  };
+
+  const getConservationIcon = (type: string) => {
+    switch (type) {
+      case 'Congelado': return '❄️';
+      case 'Resfriado': return '🧊';
+      case 'Seco': return '📦';
+      default: return '📦';
     }
   };
 

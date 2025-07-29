@@ -10,7 +10,6 @@ import Productions from "./pages/Productions";
 import Products from "./pages/Products";
 import Menus from "./pages/Menus";
 import Inventory from "./pages/Inventory";
-import Labels from "./pages/Labels";
 import SanitaryLabels from "./pages/SanitaryLabels";
 import Clients from "./pages/Clients";
 import Reports from "./pages/Reports";
@@ -93,11 +92,6 @@ function AppContent() {
       <Route path="/inventory" element={
         <ProtectedRoute>
           <Layout><Inventory /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/labels" element={
-        <ProtectedRoute>
-          <Layout><Labels /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/sanitary-labels" element={
