@@ -187,6 +187,44 @@ export function useSanitaryLabels() {
     }
   };
 
+  const updateLabel = async (id: string, labelData: Partial<CreateSanitaryLabelData>) => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('sanitary_labels')
+        .update({
+          ...labelData,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setLabels(prev => prev.map(label => 
+        label.id === id ? { ...label, ...(data as SanitaryLabel) } : label
+      ));
+      
+      toast({
+        title: "Etiqueta atualizada!",
+        description: "A etiqueta foi atualizada com sucesso.",
+      });
+
+      return data;
+    } catch (error) {
+      console.error('Erro ao atualizar etiqueta:', error);
+      toast({
+        title: "Erro ao atualizar",
+        description: "Não foi possível atualizar a etiqueta.",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   const deleteLabel = async (id: string) => {
     if (!user) return;
 
@@ -240,6 +278,7 @@ export function useSanitaryLabels() {
     labels,
     loading,
     createLabel,
+    updateLabel,
     printLabel,
     deleteLabel,
     getExpiringLabels,
