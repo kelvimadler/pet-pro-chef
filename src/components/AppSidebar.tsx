@@ -9,7 +9,8 @@ import {
   Settings,
   ChefHat,
   LogOut,
-  Bell
+  Bell,
+  Thermometer
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,6 +39,7 @@ const menuItems = [
   { title: "Cardápios", url: "/menus", icon: Utensils },
   { title: "Estoque", url: "/inventory", icon: Package },
   { title: "Etiquetas", url: "/labels", icon: QrCode },
+  { title: "Etiquetas Sanitárias", url: "/sanitary-labels", icon: Thermometer },
   { title: "Clientes", url: "/clients", icon: Users },
   { title: "Relatórios", url: "/reports", icon: BarChart3 },
   { title: "Configurações", url: "/settings", icon: Settings },

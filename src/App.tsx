@@ -11,6 +11,7 @@ import Products from "./pages/Products";
 import Menus from "./pages/Menus";
 import Inventory from "./pages/Inventory";
 import Labels from "./pages/Labels";
+import SanitaryLabels from "./pages/SanitaryLabels";
 import Clients from "./pages/Clients";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
@@ -97,6 +98,11 @@ function AppContent() {
       <Route path="/labels" element={
         <ProtectedRoute>
           <Layout><Labels /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/sanitary-labels" element={
+        <ProtectedRoute>
+          <Layout><SanitaryLabels /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/clients" element={

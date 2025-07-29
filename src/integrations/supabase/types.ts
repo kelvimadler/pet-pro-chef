@@ -605,6 +605,45 @@ export type Database = {
         }
         Relationships: []
       }
+      sanitary_labels: {
+        Row: {
+          conservation_type: string
+          created_at: string
+          expiry_datetime: string
+          id: string
+          observations: string | null
+          original_expiry_date: string
+          printed: boolean | null
+          product_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conservation_type: string
+          created_at?: string
+          expiry_datetime: string
+          id?: string
+          observations?: string | null
+          original_expiry_date: string
+          printed?: boolean | null
+          product_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conservation_type?: string
+          created_at?: string
+          expiry_datetime?: string
+          id?: string
+          observations?: string | null
+          original_expiry_date?: string
+          printed?: boolean | null
+          product_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
