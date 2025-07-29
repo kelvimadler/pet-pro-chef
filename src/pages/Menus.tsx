@@ -269,16 +269,27 @@ export default function Menus() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>Upload da Receita (opcional)</Label>
-                <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
-                  <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">
-                    Clique para fazer upload ou arraste um arquivo PDF/imagem
-                  </p>
-                  <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" />
-                </div>
-              </div>
+                  <div className="space-y-2">
+                    <Label>Upload da Receita (opcional)</Label>
+                    <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
+                      <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        Clique para fazer upload ou arraste um arquivo PDF/imagem
+                      </p>
+                      <input 
+                        type="file" 
+                        className="w-full p-2 border border-border rounded-lg cursor-pointer" 
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            console.log('Arquivo selecionado:', file.name);
+                            // Implementar upload aqui
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
 
               <div className="flex gap-4 pt-4">
                 <Button

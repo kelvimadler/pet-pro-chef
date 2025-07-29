@@ -183,7 +183,14 @@ export default function Labels() {
                   <div className="space-y-2">
                     <div className="text-sm text-muted-foreground font-medium">Ações</div>
                     <div className="space-y-2">
-                      <Button variant="outline" size="sm" className="w-full flex items-center gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full flex items-center gap-2"
+                        onClick={() => {
+                          window.print();
+                        }}
+                      >
                         <Printer className="w-4 h-4" />
                         Imprimir Etiquetas
                       </Button>

@@ -1,7 +1,12 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useClients } from "@/hooks/useClients";
 import { 
   Users, 
   Plus, 
@@ -15,7 +20,21 @@ import {
 } from "lucide-react";
 
 export default function Clients() {
-  const clients = [
+  const { clients, loading, createClient, deleteClient } = useClients();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showDialog, setShowDialog] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    pet_name: '',
+    pet_breed: '',
+    pet_weight: '',
+    notes: ''
+  });
+
+  const mockClients = [
     {
       id: "CLI001",
       name: "Ana Silva",
@@ -62,6 +81,31 @@ export default function Clients() {
     }
   ];
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await createClient({
+      ...formData,
+      pet_weight: formData.pet_weight ? parseFloat(formData.pet_weight) : null
+    });
+    setShowDialog(false);
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      address: '',
+      pet_name: '',
+      pet_breed: '',
+      pet_weight: '',
+      notes: ''
+    });
+  };
+
+  const allClients = [...clients, ...mockClients];
+  const filteredClients = allClients.filter(client =>
+    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Ativo":
@@ -83,10 +127,103 @@ export default function Clients() {
             Cadastro e acompanhamento de clientes e pets
           </p>
         </div>
-        <Button className="bg-gradient-primary hover:scale-105 transition-transform shadow-elegant">
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Cliente
-        </Button>
+        <Dialog open={showDialog} onOpenChange={setShowDialog}>
+          <DialogTrigger asChild>
+            <Button className="bg-gradient-primary hover:scale-105 transition-transform shadow-elegant">
+              <Plus className="w-4 h-4 mr-2" />
+              Novo Cliente
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Novo Cliente</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nome *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Telefone</Label>
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pet-name">Nome do Pet</Label>
+                  <Input
+                    id="pet-name"
+                    value={formData.pet_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, pet_name: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Endereço</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="pet-breed">Raça do Pet</Label>
+                  <Input
+                    id="pet-breed"
+                    value={formData.pet_breed}
+                    onChange={(e) => setFormData(prev => ({ ...prev, pet_breed: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pet-weight">Peso do Pet (kg)</Label>
+                  <Input
+                    id="pet-weight"
+                    type="number"
+                    step="0.1"
+                    value={formData.pet_weight}
+                    onChange={(e) => setFormData(prev => ({ ...prev, pet_weight: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="notes">Observações</Label>
+                <Textarea
+                  id="notes"
+                  value={formData.notes}
+                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                />
+              </div>
+              <div className="flex gap-4 pt-4">
+                <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" className="bg-gradient-primary">
+                  Criar Cliente
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Search */}
@@ -97,6 +234,8 @@ export default function Clients() {
             <Input 
               placeholder="Buscar por nome, email ou ID..." 
               className="pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </CardContent>
@@ -104,7 +243,7 @@ export default function Clients() {
 
       {/* Clients List */}
       <div className="grid gap-4">
-        {clients.map((client) => (
+        {filteredClients.map((client) => (
           <Card key={client.id} className="shadow-card-hover border-border/50 hover:shadow-elegant transition-all">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
@@ -114,14 +253,14 @@ export default function Clients() {
                     {client.name}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    ID: {client.id} • Cliente desde {new Date(client.registeredAt).toLocaleDateString("pt-BR")}
+                    ID: {client.id} • Cliente desde {new Date((client as any).registeredAt || (client as any).created_at).toLocaleDateString("pt-BR")}
                   </p>
                 </div>
                 <Badge 
                   variant="outline" 
-                  className={getStatusColor(client.status)}
-                >
-                  {client.status}
+                   className={getStatusColor((client as any).status || 'Ativo')}
+                 >
+                   {(client as any).status || 'Ativo'}
                 </Badge>
               </div>
             </CardHeader>
@@ -151,7 +290,7 @@ export default function Clients() {
                     <span className="text-sm font-medium">Pets</span>
                   </div>
                   <div className="space-y-2">
-                    {client.pets.map((pet, index) => (
+                    {((client as any).pets || []).map((pet: any, index: number) => (
                       <div key={index} className="bg-accent/30 rounded-lg p-3">
                         <p className="font-medium text-foreground text-sm">{pet.name}</p>
                         <p className="text-xs text-muted-foreground">{pet.breed} • {pet.age}</p>
@@ -165,15 +304,15 @@ export default function Clients() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Cardápios ativos:</span>
-                      <span className="font-medium text-primary">{client.activeMenus}</span>
+                      <span className="font-medium text-primary">{(client as any).activeMenus || 0}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Total de pedidos:</span>
-                      <span className="font-medium text-foreground">{client.totalOrders}</span>
+                      <span className="font-medium text-foreground">{(client as any).totalOrders || 0}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Pets cadastrados:</span>
-                      <span className="font-medium text-foreground">{client.pets.length}</span>
+                      <span className="font-medium text-foreground">{((client as any).pets || []).length}</span>
                     </div>
                   </div>
                 </div>
@@ -188,9 +327,22 @@ export default function Clients() {
                   <Edit className="w-4 h-4" />
                   Editar
                 </Button>
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-2"
+                  onClick={() => {
+                    if (confirm(`Deseja excluir o cliente ${client.name}?`)) {
+                      if (client.id.startsWith('CLI')) {
+                        alert('Cliente de exemplo não pode ser excluído');
+                      } else {
+                        deleteClient(client.id);
+                      }
+                    }
+                  }}
+                >
                   <Heart className="w-4 h-4" />
-                  Cardápios
+                  Excluir
                 </Button>
               </div>
             </CardContent>

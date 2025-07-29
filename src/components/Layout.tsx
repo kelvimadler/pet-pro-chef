@@ -3,12 +3,14 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
+import { useStockMonitor } from "@/hooks/useStockMonitor";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export function Layout({ children }: LayoutProps) {
+  useStockMonitor();
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">

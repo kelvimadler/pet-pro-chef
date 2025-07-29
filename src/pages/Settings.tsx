@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useSettings } from "@/hooks/useSettings";
 import { 
   Settings as SettingsIcon, 
   Building, 
@@ -12,6 +14,12 @@ import {
 } from "lucide-react";
 
 export default function Settings() {
+  const { settings, saveSettings } = useSettings();
+  const [formData, setFormData] = useState(settings);
+
+  const handleSave = async () => {
+    await saveSettings(formData);
+  };
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -22,7 +30,10 @@ export default function Settings() {
             Parâmetros do sistema e dados da empresa
           </p>
         </div>
-        <Button className="bg-gradient-primary hover:scale-105 transition-transform shadow-elegant">
+        <Button 
+          onClick={handleSave}
+          className="bg-gradient-primary hover:scale-105 transition-transform shadow-elegant"
+        >
           <Save className="w-4 h-4 mr-2" />
           Salvar Alterações
         </Button>
@@ -41,7 +52,11 @@ export default function Settings() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="company-name">Nome da Empresa</Label>
-                <Input id="company-name" defaultValue="PetFactory - Alimentação Natural" />
+                <Input 
+                  id="company-name" 
+                  value={formData.company_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="company-cnpj">CNPJ</Label>
@@ -53,7 +68,11 @@ export default function Settings() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="company-phone">Telefone</Label>
-                <Input id="company-phone" defaultValue="(11) 99999-0000" />
+                <Input 
+                  id="company-phone" 
+                  value={formData.company_phone}
+                  onChange={(e) => setFormData(prev => ({ ...prev, company_phone: e.target.value }))}
+                />
               </div>
             </div>
           </CardContent>

@@ -413,8 +413,11 @@ export default function Inventory() {
                           size="sm" 
                           className="w-full flex items-center gap-2"
                           onClick={() => {
-                            // Implementar modal de entrada de estoque
-                            console.log('Entrada de estoque para:', ingredient.name);
+                            const quantity = prompt('Quantidade a adicionar:');
+                            if (quantity) {
+                              const newStock = (ingredient.current_stock || 0) + parseFloat(quantity);
+                              updateIngredient(ingredient.id, { current_stock: newStock });
+                            }
                           }}
                         >
                           <Truck className="w-4 h-4" />
@@ -426,8 +429,7 @@ export default function Inventory() {
                             size="sm" 
                             className="flex-1 flex items-center gap-2"
                             onClick={() => {
-                              // Implementar visualização detalhada do ingrediente
-                              console.log('Ver detalhes de:', ingredient.name);
+                              alert(`Detalhes de ${ingredient.name}:\nEstoque atual: ${ingredient.current_stock} ${ingredient.unit}\nEstoque mínimo: ${ingredient.minimum_stock} ${ingredient.unit}\nFornecedor: ${ingredient.supplier || 'N/A'}`);
                             }}
                           >
                             <Eye className="w-4 h-4" />

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useProductions } from "@/hooks/useProductions";
 import { useIngredients } from "@/hooks/useIngredients";
 import { useClients } from "@/hooks/useClients";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -58,6 +59,18 @@ export default function Reports() {
     acc[month] = (acc[month] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
+
+  const chartData = Object.entries(productionsByMonth).map(([month, count]) => ({
+    month,
+    producoes: count
+  }));
+
+  const proteinData = Object.entries(proteinCounts).map(([protein, count]) => ({
+    name: protein,
+    value: count
+  }));
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
   return (
     <div className="space-y-6">
@@ -230,34 +243,52 @@ export default function Reports() {
         </Card>
       </div>
 
-      {/* Charts Placeholder - Future Implementation */}
+      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="shadow-card-hover border-border/50">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">Tendência de Produção</CardTitle>
+            <CardTitle className="text-lg font-semibold">Produções por Mês</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64 bg-gradient-natural rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground">Gráfico de tendências</p>
-                <p className="text-sm text-muted-foreground">Em desenvolvimento</p>
-              </div>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="producoes" fill="#8884d8" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
 
         <Card className="shadow-card-hover border-border/50">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">Eficiência por Produto</CardTitle>
+            <CardTitle className="text-lg font-semibold">Tipos de Proteína</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64 bg-gradient-natural rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <TrendingUp className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground">Análise de eficiência</p>
-                <p className="text-sm text-muted-foreground">Em desenvolvimento</p>
-              </div>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={proteinData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {proteinData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>

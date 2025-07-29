@@ -41,8 +41,8 @@ export default function Dashboard() {
 
   const metrics = [
     {
-      title: "Produções Hoje",
-      value: todayProductions.length,
+      title: "Total de Produções",
+      value: finishedProductions.length,
       icon: ChefHat,
       variant: "success" as const,
       subtitle: `${inProgressProductions.length} em andamento`,
