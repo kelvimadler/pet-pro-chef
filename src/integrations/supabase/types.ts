@@ -101,6 +101,86 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      inventory_items: {
+        Row: {
+          category_id: string
+          cost_per_unit: number | null
+          created_at: string
+          current_stock: number
+          id: string
+          maximum_stock: number | null
+          minimum_stock: number
+          name: string
+          supplier: string | null
+          unit: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category_id: string
+          cost_per_unit?: number | null
+          created_at?: string
+          current_stock?: number
+          id?: string
+          maximum_stock?: number | null
+          minimum_stock?: number
+          name: string
+          supplier?: string | null
+          unit?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category_id?: string
+          cost_per_unit?: number | null
+          created_at?: string
+          current_stock?: number
+          id?: string
+          maximum_stock?: number | null
+          minimum_stock?: number
+          name?: string
+          supplier?: string | null
+          unit?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_movements: {
         Row: {
           created_at: string
