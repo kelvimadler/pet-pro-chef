@@ -7,9 +7,15 @@ import {
   Users, 
   BarChart3, 
   Settings,
-  ChefHat
+  ChefHat,
+  LogOut,
+  Bell
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNotifications } from "@/hooks/useNotifications";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 import {
   Sidebar,
@@ -21,6 +27,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
+  SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
 
@@ -39,6 +46,8 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
+  const { signOut } = useAuth();
+  const { unreadCount } = useNotifications();
   
   const collapsed = state === "collapsed";
 
@@ -47,6 +56,10 @@ export function AppSidebar() {
     isActive 
       ? "bg-gradient-primary text-primary-foreground shadow-md font-medium" 
       : "hover:bg-accent/60 transition-all duration-200 hover:shadow-sm";
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <Sidebar
@@ -89,6 +102,11 @@ export function AppSidebar() {
                       {!collapsed && (
                         <span className="text-sm font-medium">{item.title}</span>
                       )}
+                      {item.title === "Configurações" && unreadCount > 0 && (
+                        <Badge variant="destructive" className="ml-auto">
+                          {unreadCount}
+                        </Badge>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -97,6 +115,18 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="border-t border-border/50 p-2">
+        <Button
+          variant="ghost"
+          size={collapsed ? "icon" : "default"}
+          onClick={handleSignOut}
+          className="w-full justify-start text-muted-foreground hover:text-foreground"
+        >
+          <LogOut className={`w-4 h-4 ${!collapsed ? "mr-2" : ""}`} />
+          {!collapsed && "Sair"}
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   );
 }

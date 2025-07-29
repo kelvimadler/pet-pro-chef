@@ -2,6 +2,8 @@ import { MetricCard } from "@/components/MetricCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useProductions } from "@/hooks/useProductions";
+import { useNavigate } from "react-router-dom";
 import { 
   ChefHat, 
   Package, 
@@ -14,14 +16,20 @@ import {
 } from "lucide-react";
 
 export default function Dashboard() {
-  // Mock data - em produção viria de uma API
+  const { productions } = useProductions();
+  const navigate = useNavigate();
+  
+  const todayProductions = productions.filter(p => 
+    new Date(p.production_date).toDateString() === new Date().toDateString()
+  );
+  const inProgressProductions = productions.filter(p => p.status === 'in_progress');
   const metrics = [
     {
       title: "Produções Hoje",
-      value: 8,
+      value: todayProductions.length,
       icon: ChefHat,
       variant: "success" as const,
-      subtitle: "3 em andamento",
+      subtitle: `${inProgressProductions.length} em andamento`,
       trend: { value: 12, isPositive: true }
     },
     {
