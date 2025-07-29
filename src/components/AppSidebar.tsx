@@ -103,11 +103,6 @@ export function AppSidebar() {
                       {!collapsed && (
                         <span className="text-sm font-medium">{item.title}</span>
                       )}
-                      {item.title === "Configurações" && unreadCount > 0 && (
-                        <Badge variant="destructive" className="ml-auto">
-                          {unreadCount}
-                        </Badge>
-                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

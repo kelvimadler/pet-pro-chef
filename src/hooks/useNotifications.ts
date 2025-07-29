@@ -34,6 +34,11 @@ export function useNotifications() {
 
   useEffect(() => {
     fetchNotifications();
+    
+    // Clean up duplicates on load
+    import('../utils/cleanupNotifications').then(({ clearDuplicateNotifications }) => {
+      clearDuplicateNotifications();
+    });
   }, [user]);
 
   const markAsRead = async (id: string) => {
