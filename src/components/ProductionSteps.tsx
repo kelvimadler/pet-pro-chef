@@ -1,5 +1,13 @@
 import { Check, Circle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Stepper,
+  StepperIndicator,
+  StepperItem,
+  StepperSeparator,
+  StepperTitle,
+  StepperTrigger,
+} from "@/components/ui/stepper";
 
 interface Step {
   id: string;
@@ -64,81 +72,59 @@ export function ProductionSteps({ production }: ProductionStepsProps) {
   };
 
   const steps = getSteps();
-
-  const getStepIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <Check className="w-3 h-3 md:w-4 md:h-4 text-white" />;
-      case 'current':
-        return <Clock className="w-3 h-3 md:w-4 md:h-4 text-white animate-pulse" />;
-      default:
-        return <Circle className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground" />;
-    }
-  };
-
-  const getStepColors = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-gradient-to-r from-green-500 to-green-600 border-green-500 shadow-green-200';
-      case 'current':
-        return 'bg-gradient-to-r from-primary to-primary-glow border-primary shadow-primary/30';
-      default:
-        return 'bg-muted border-border';
-    }
-  };
-
-  const getConnectorColor = (currentIndex: number) => {
-    const currentStep = steps[currentIndex];
-    const nextStep = steps[currentIndex + 1];
+  
+  // Calculate current step number for stepper
+  const getCurrentStepNumber = () => {
+    const currentStepIndex = steps.findIndex(step => step.status === 'current');
+    if (currentStepIndex !== -1) return currentStepIndex + 1;
     
-    if (currentStep.status === 'completed') {
-      return 'bg-green-500';
-    }
-    return 'bg-muted-foreground/20';
+    const completedSteps = steps.filter(step => step.status === 'completed').length;
+    return completedSteps === steps.length ? steps.length : Math.max(1, completedSteps + 1);
   };
 
   return (
-    <div className="w-full relative px-2">
-      <div className="flex items-center justify-between relative">
-        {steps.map((step, index) => (
-          <div key={step.id} className="flex flex-col items-center relative z-10">
-            {/* Step Circle */}
-            <div
-              className={cn(
-                "w-8 h-8 md:w-10 md:h-10 rounded-full border-2 flex items-center justify-center transition-all duration-500 shadow-lg relative z-20",
-                getStepColors(step.status),
-                step.status === 'current' && "ring-4 ring-primary/30 animate-pulse"
-              )}
+    <div className="w-full py-2">
+      <Stepper defaultValue={getCurrentStepNumber()}>
+        {steps.map((step, index) => {
+          const stepNumber = index + 1;
+          const isCompleted = step.status === 'completed';
+          const isCurrent = step.status === 'current';
+          
+          return (
+            <StepperItem
+              key={step.id}
+              step={stepNumber}
+              className="max-md:items-start [&:not(:last-child)]:flex-1"
             >
-              {getStepIcon(step.status)}
-            </div>
-            
-            {/* Step Content */}
-            <div className="mt-2 text-center max-w-[80px] md:max-w-[120px]">
-              <h3 className={cn(
-                "font-semibold text-xs md:text-sm transition-all duration-300",
-                step.status === 'current' ? "text-primary scale-105" : 
-                step.status === 'completed' ? "text-green-600" : "text-muted-foreground"
-              )}>
-                {step.title}
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1 hidden md:block">
-                {step.description}
-              </p>
-            </div>
-          </div>
-        ))}
-        
-        {/* Progress Bar */}
-        <div className="absolute top-4 left-4 right-4 h-2 bg-muted rounded-full z-0">
-          <div 
-            className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-1000 ease-out"
-            style={{
-              width: `${(steps.filter(s => s.status === 'completed').length / (steps.length - 1)) * 100}%`
-            }}
-          />
-        </div>
-      </div>
+              <StepperTrigger className="max-md:flex-col">
+                <StepperIndicator step={stepNumber} />
+                <div className="text-center md:text-left max-w-[80px] md:max-w-[120px]">
+                  <StepperTitle 
+                    className={cn(
+                      "text-xs md:text-sm transition-all duration-300",
+                      isCurrent ? "text-primary font-semibold" : 
+                      isCompleted ? "text-green-600 font-medium" : "text-muted-foreground"
+                    )}
+                  >
+                    {step.title}
+                  </StepperTitle>
+                  <p className="text-xs text-muted-foreground mt-1 hidden md:block">
+                    {step.description}
+                  </p>
+                </div>
+              </StepperTrigger>
+              {stepNumber < steps.length && (
+                <StepperSeparator 
+                  className={cn(
+                    "max-md:mt-3.5 md:mx-4 transition-all duration-500",
+                    isCompleted ? "bg-gradient-to-r from-green-500 to-green-600" : "bg-muted"
+                  )}
+                />
+              )}
+            </StepperItem>
+          );
+        })}
+      </Stepper>
     </div>
   );
 }
