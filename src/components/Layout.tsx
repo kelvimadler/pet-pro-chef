@@ -1,7 +1,8 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
-import { Bell, User } from "lucide-react";
+import { User } from "lucide-react";
+import { NotificationDropdown } from "@/components/NotificationDropdown";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -32,10 +33,7 @@ export function Layout({ children }: LayoutProps) {
               </div>
               
               <div className="flex items-center gap-3">
-                <Button variant="outline" size="icon" className="relative">
-                  <Bell className="w-4 h-4" />
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-destructive rounded-full"></span>
-                </Button>
+                <NotificationDropdown />
                 <Button variant="outline" size="icon">
                   <User className="w-4 h-4" />
                 </Button>

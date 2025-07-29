@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function EditProduction() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { productions, updateProduction } = useProductions();
+  const { productions, updateProduction, deleteProduction } = useProductions();
   const { products } = useProducts();
   const { toast } = useToast();
   const [production, setProduction] = useState<any>(null);
@@ -393,10 +393,23 @@ export default function EditProduction() {
         </CardContent>
       </Card>
 
-      {/* Botão para voltar */}
-      <div className="flex gap-4">
+      {/* Botões de ação */}
+      <div className="flex justify-between">
         <Button onClick={() => navigate('/productions')}>
           Voltar para Produções
+        </Button>
+        <Button 
+          variant="destructive"
+          onClick={async () => {
+            if (confirm('Tem certeza que deseja excluir esta produção?')) {
+              const success = await deleteProduction(production.id);
+              if (success) {
+                navigate('/productions');
+              }
+            }
+          }}
+        >
+          Excluir Produção
         </Button>
       </div>
     </div>

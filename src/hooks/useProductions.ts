@@ -101,11 +101,41 @@ export function useProductions() {
     }
   };
 
+  const deleteProduction = async (id: string) => {
+    if (!user) return false;
+
+    try {
+      const { error } = await supabase
+        .from('productions')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      
+      setProductions(prev => prev.filter(item => item.id !== id));
+      toast({
+        title: "Produção excluída!",
+        description: "Produção removida com sucesso.",
+      });
+      return true;
+    } catch (error) {
+      console.error('Erro ao excluir produção:', error);
+      toast({
+        title: "Erro ao excluir produção",
+        description: "Não foi possível excluir a produção.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   return {
     productions,
     loading,
     createProduction,
     updateProduction,
+    deleteProduction,
     refetch: fetchProductions,
   };
 }

@@ -408,12 +408,28 @@ export default function Inventory() {
                     <div className="space-y-3">
                       <div className="text-sm text-muted-foreground">Ações</div>
                       <div className="space-y-2">
-                        <Button variant="outline" size="sm" className="w-full flex items-center gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full flex items-center gap-2"
+                          onClick={() => {
+                            // Implementar modal de entrada de estoque
+                            console.log('Entrada de estoque para:', ingredient.name);
+                          }}
+                        >
                           <Truck className="w-4 h-4" />
                           Entrada Estoque
                         </Button>
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm" className="flex-1 flex items-center gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1 flex items-center gap-2"
+                            onClick={() => {
+                              // Implementar visualização detalhada do ingrediente
+                              console.log('Ver detalhes de:', ingredient.name);
+                            }}
+                          >
                             <Eye className="w-4 h-4" />
                             Ver
                           </Button>

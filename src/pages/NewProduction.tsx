@@ -9,12 +9,14 @@ import { Switch } from "@/components/ui/switch";
 import { useNavigate } from "react-router-dom";
 import { useProducts } from "@/hooks/useProducts";
 import { useProductions } from "@/hooks/useProductions";
+import { useToast } from "@/hooks/use-toast";
 import { ChefHat, ArrowLeft } from "lucide-react";
 
 export default function NewProduction() {
   const navigate = useNavigate();
   const { products } = useProducts();
-  const { createProduction } = useProductions();
+  const { createProduction, productions } = useProductions();
+  const { toast } = useToast();
   
   const [formData, setFormData] = useState({
     batch_code: '',
@@ -25,16 +27,33 @@ export default function NewProduction() {
   });
 
   const generateBatchCode = () => {
-    const date = new Date();
-    const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
-    const timeStr = date.toTimeString().slice(0, 5).replace(':', '');
-    return `BATCH-${dateStr}-${timeStr}`;
+    // Encontrar o maior número de lote existente
+    const existingBatchNumbers = productions
+      .map(p => {
+        const match = p.batch_code.match(/^(\d+)$/);
+        return match ? parseInt(match[1]) : 0;
+      })
+      .filter(num => num >= 8000);
+    
+    const maxBatch = existingBatchNumbers.length > 0 ? Math.max(...existingBatchNumbers) : 7999;
+    return (maxBatch + 1).toString();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const batch_code = formData.batch_code || generateBatchCode();
+    
+    // Verificar se o lote já existe
+    const existingProduction = productions.find(p => p.batch_code === batch_code);
+    if (existingProduction) {
+      toast({
+        title: "Código de lote já existe",
+        description: "Este número de lote já está em uso. Escolha outro.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const production = await createProduction({
       batch_code,

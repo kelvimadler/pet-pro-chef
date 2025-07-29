@@ -23,9 +23,10 @@ export default function Dashboard() {
   const { unreadCount } = useNotifications();
   const navigate = useNavigate();
   
-  const todayProductions = productions.filter(p => 
-    new Date(p.production_date).toDateString() === new Date().toDateString()
-  );
+  const todayProductions = productions.filter(p => {
+    const productionDate = p.production_date || p.created_at;
+    return new Date(productionDate).toDateString() === new Date().toDateString();
+  });
   const inProgressProductions = productions.filter(p => p.status === 'in_progress');
   const finishedProductions = productions.filter(p => p.status === 'finished');
   const lowStockIngredients = getLowStockIngredients();
@@ -250,7 +251,11 @@ export default function Dashboard() {
                 <AlertTriangle className="w-5 h-5 text-warning" />
                 Produtos Vencendo
               </CardTitle>
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate('/labels')}
+              >
                 <Eye className="w-4 h-4 mr-2" />
                 Ver Todos
               </Button>
