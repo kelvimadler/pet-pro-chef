@@ -41,7 +41,7 @@ export function useProductions() {
     fetchProductions();
   }, [user]);
 
-  const createProduction = async (productionData: Partial<Production> & { batch_code: string; status: string }) => {
+  const createProduction = async (productionData: Partial<Production> & { batch_code: string; status: string; name?: string; description?: string }) => {
     if (!user) return null;
 
     try {
