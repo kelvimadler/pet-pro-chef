@@ -49,7 +49,13 @@ export function useClients() {
     try {
       const { data, error } = await supabase
         .from('clients')
-        .insert([{ ...clientData, user_id: user.id }])
+        .insert([{ 
+          ...clientData, 
+          user_id: user.id,
+          // Garantir que os novos campos sejam incluídos
+          cpf: clientData.cpf || null,
+          whatsapp: clientData.whatsapp || null
+        }])
         .select()
         .single();
 

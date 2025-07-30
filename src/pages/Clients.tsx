@@ -26,7 +26,7 @@ import {
 
 export default function Clients() {
   const { clients, loading, createClient, deleteClient, updateClient } = useClients();
-  const { createPet } = usePets();
+  const { createPet, refetch: refetchPets } = usePets();
   const { menus } = useMenus();
   const [searchTerm, setSearchTerm] = useState("");
   const [showDialog, setShowDialog] = useState(false);
@@ -127,6 +127,10 @@ export default function Clients() {
       pet_weight: editFormData.pet_weight ? parseFloat(editFormData.pet_weight) : null,
       notes: editFormData.notes
     });
+    
+    // Atualizar a lista de pets após adicionar novos
+    await refetchPets();
+    
     setEditDialog(false);
     setSelectedClient(null);
   };
