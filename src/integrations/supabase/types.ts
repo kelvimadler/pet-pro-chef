@@ -17,6 +17,7 @@ export type Database = {
       clients: {
         Row: {
           address: string | null
+          cpf: string | null
           created_at: string
           email: string | null
           id: string
@@ -28,9 +29,11 @@ export type Database = {
           phone: string | null
           updated_at: string
           user_id: string
+          whatsapp: string | null
         }
         Insert: {
           address?: string | null
+          cpf?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -42,9 +45,11 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id: string
+          whatsapp?: string | null
         }
         Update: {
           address?: string | null
+          cpf?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -56,6 +61,7 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -367,36 +373,45 @@ export type Database = {
       pets: {
         Row: {
           age: string | null
+          birth_date: string | null
           breed: string | null
           client_id: string | null
           created_at: string
           id: string
           name: string
           notes: string | null
+          sex: string | null
+          species: string | null
           updated_at: string
           user_id: string
           weight: number | null
         }
         Insert: {
           age?: string | null
+          birth_date?: string | null
           breed?: string | null
           client_id?: string | null
           created_at?: string
           id?: string
           name: string
           notes?: string | null
+          sex?: string | null
+          species?: string | null
           updated_at?: string
           user_id: string
           weight?: number | null
         }
         Update: {
           age?: string | null
+          birth_date?: string | null
           breed?: string | null
           client_id?: string | null
           created_at?: string
           id?: string
           name?: string
           notes?: string | null
+          sex?: string | null
+          species?: string | null
           updated_at?: string
           user_id?: string
           weight?: number | null
@@ -420,6 +435,7 @@ export type Database = {
           dehydrator_entry_time: string | null
           dehydrator_exit_time: string | null
           dehydrator_temperature: number | null
+          description: string | null
           epi_used: boolean | null
           expiry_date: string | null
           final_cleaning: boolean | null
@@ -427,6 +443,7 @@ export type Database = {
           frozen_weight: number | null
           id: string
           initial_cleaning: boolean | null
+          name: string | null
           packages_150g: number | null
           packages_60g: number | null
           product_id: string | null
@@ -449,6 +466,7 @@ export type Database = {
           dehydrator_entry_time?: string | null
           dehydrator_exit_time?: string | null
           dehydrator_temperature?: number | null
+          description?: string | null
           epi_used?: boolean | null
           expiry_date?: string | null
           final_cleaning?: boolean | null
@@ -456,6 +474,7 @@ export type Database = {
           frozen_weight?: number | null
           id?: string
           initial_cleaning?: boolean | null
+          name?: string | null
           packages_150g?: number | null
           packages_60g?: number | null
           product_id?: string | null
@@ -478,6 +497,7 @@ export type Database = {
           dehydrator_entry_time?: string | null
           dehydrator_exit_time?: string | null
           dehydrator_temperature?: number | null
+          description?: string | null
           epi_used?: boolean | null
           expiry_date?: string | null
           final_cleaning?: boolean | null
@@ -485,6 +505,7 @@ export type Database = {
           frozen_weight?: number | null
           id?: string
           initial_cleaning?: boolean | null
+          name?: string | null
           packages_150g?: number | null
           packages_60g?: number | null
           product_id?: string | null

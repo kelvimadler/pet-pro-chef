@@ -8,7 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useClients } from "@/hooks/useClients";
 import { usePets } from "@/hooks/usePets";
+import { useMenus } from "@/hooks/useMenus";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Users, 
   Plus, 
@@ -25,6 +27,7 @@ import {
 export default function Clients() {
   const { clients, loading, createClient, deleteClient, updateClient } = useClients();
   const { createPet } = usePets();
+  const { menus } = useMenus();
   const [searchTerm, setSearchTerm] = useState("");
   const [showDialog, setShowDialog] = useState(false);
   const [viewDialog, setViewDialog] = useState(false);
@@ -35,9 +38,14 @@ export default function Clients() {
     email: '',
     phone: '',
     address: '',
+    cpf: '',
+    whatsapp: '',
     pet_name: '',
     pet_breed: '',
     pet_weight: '',
+    pet_species: '',
+    pet_sex: '',
+    pet_birth_date: '',
     notes: ''
   });
 
@@ -46,11 +54,16 @@ export default function Clients() {
     email: '',
     phone: '',
     address: '',
+    cpf: '',
+    whatsapp: '',
     pet_name: '',
     pet_breed: '',
     pet_weight: '',
+    pet_species: '',
+    pet_sex: '',
+    pet_birth_date: '',
     notes: '',
-    pets: [] as Array<{ name: string; breed: string; weight: number | null }>,
+    pets: [] as Array<{ name: string; breed: string; weight: number | null; species: string; sex: string; birth_date: string }>,
   });
 
   // Only use real clients from Supabase
@@ -67,9 +80,14 @@ export default function Clients() {
       email: '',
       phone: '',
       address: '',
+      cpf: '',
+      whatsapp: '',
       pet_name: '',
       pet_breed: '',
       pet_weight: '',
+      pet_species: '',
+      pet_sex: '',
+      pet_birth_date: '',
       notes: ''
     });
   };
@@ -90,6 +108,9 @@ export default function Clients() {
         name: pet.name,
         breed: pet.breed,
         weight: pet.weight,
+        species: pet.species || '',
+        sex: pet.sex || '',
+        birth_date: pet.birth_date || null,
         notes: ''
       });
     }
@@ -99,6 +120,8 @@ export default function Clients() {
       email: editFormData.email,
       phone: editFormData.phone,
       address: editFormData.address,
+      cpf: editFormData.cpf,
+      whatsapp: editFormData.whatsapp,
       pet_name: editFormData.pet_name,
       pet_breed: editFormData.pet_breed,
       pet_weight: editFormData.pet_weight ? parseFloat(editFormData.pet_weight) : null,
@@ -115,9 +138,14 @@ export default function Clients() {
       email: client.email || '',
       phone: client.phone || '',
       address: client.address || '',
+      cpf: client.cpf || '',
+      whatsapp: client.whatsapp || '',
       pet_name: client.pet_name || '',
       pet_breed: client.pet_breed || '',
       pet_weight: client.pet_weight?.toString() || '',
+      pet_species: client.pet_species || '',
+      pet_sex: client.pet_sex || '',
+      pet_birth_date: client.pet_birth_date || '',
       notes: client.notes || '',
       pets: []
     });
@@ -197,6 +225,24 @@ export default function Clients() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="whatsapp">WhatsApp</Label>
+                  <Input
+                    id="whatsapp"
+                    value={formData.whatsapp}
+                    onChange={(e) => setFormData(prev => ({ ...prev, whatsapp: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="cpf">CPF</Label>
+                  <Input
+                    id="cpf"
+                    value={formData.cpf}
+                    onChange={(e) => setFormData(prev => ({ ...prev, cpf: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="pet-name">Nome do Pet</Label>
                   <Input
                     id="pet-name"
@@ -223,6 +269,23 @@ export default function Clients() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="pet-species">Espécie do Pet</Label>
+                  <Select value={formData.pet_species} onValueChange={(value) => setFormData(prev => ({ ...prev, pet_species: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a espécie" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Cão">Cão</SelectItem>
+                      <SelectItem value="Gato">Gato</SelectItem>
+                      <SelectItem value="Ave">Ave</SelectItem>
+                      <SelectItem value="Roedor">Roedor</SelectItem>
+                      <SelectItem value="Outro">Outro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
                   <Label htmlFor="pet-weight">Peso do Pet (kg)</Label>
                   <Input
                     id="pet-weight"
@@ -232,11 +295,33 @@ export default function Clients() {
                     onChange={(e) => setFormData(prev => ({ ...prev, pet_weight: e.target.value }))}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pet-sex">Sexo do Pet</Label>
+                  <Select value={formData.pet_sex} onValueChange={(value) => setFormData(prev => ({ ...prev, pet_sex: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sexo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Macho">Macho</SelectItem>
+                      <SelectItem value="Fêmea">Fêmea</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pet-birth-date">Nascimento do Pet</Label>
+                  <Input
+                    id="pet-birth-date"
+                    type="date"
+                    value={formData.pet_birth_date}
+                    onChange={(e) => setFormData(prev => ({ ...prev, pet_birth_date: e.target.value }))}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="notes">Observações</Label>
+                <Label htmlFor="notes">Notas do Cliente</Label>
                 <Textarea
                   id="notes"
+                  placeholder="Observações, preferências alimentares, alergias, etc."
                   value={formData.notes}
                   onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                 />
@@ -349,7 +434,9 @@ export default function Clients() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Cardápios ativos:</span>
-                      <span className="font-medium text-primary">0</span>
+                      <span className="font-medium text-primary">
+                        {menus.filter(menu => menu.client_id === client.id && menu.is_active).length}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Total de pedidos:</span>
@@ -486,6 +573,24 @@ export default function Clients() {
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="edit-whatsapp">WhatsApp</Label>
+                <Input
+                  id="edit-whatsapp"
+                  value={editFormData.whatsapp}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, whatsapp: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-cpf">CPF</Label>
+                <Input
+                  id="edit-cpf"
+                  value={editFormData.cpf}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, cpf: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="edit-pet-name">Nome do Pet</Label>
                 <Input
                   id="edit-pet-name"
@@ -512,6 +617,23 @@ export default function Clients() {
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="edit-pet-species">Espécie do Pet</Label>
+                <Select value={editFormData.pet_species} onValueChange={(value) => setEditFormData(prev => ({ ...prev, pet_species: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a espécie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Cão">Cão</SelectItem>
+                    <SelectItem value="Gato">Gato</SelectItem>
+                    <SelectItem value="Ave">Ave</SelectItem>
+                    <SelectItem value="Roedor">Roedor</SelectItem>
+                    <SelectItem value="Outro">Outro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
                 <Label htmlFor="edit-pet-weight">Peso do Pet (kg)</Label>
                 <Input
                   id="edit-pet-weight"
@@ -519,6 +641,27 @@ export default function Clients() {
                   step="0.1"
                   value={editFormData.pet_weight}
                   onChange={(e) => setEditFormData(prev => ({ ...prev, pet_weight: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-pet-sex">Sexo do Pet</Label>
+                <Select value={editFormData.pet_sex} onValueChange={(value) => setEditFormData(prev => ({ ...prev, pet_sex: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sexo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Macho">Macho</SelectItem>
+                    <SelectItem value="Fêmea">Fêmea</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-pet-birth-date">Nascimento do Pet</Label>
+                <Input
+                  id="edit-pet-birth-date"
+                  type="date"
+                  value={editFormData.pet_birth_date}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, pet_birth_date: e.target.value }))}
                 />
               </div>
             </div>
@@ -537,7 +680,7 @@ export default function Clients() {
                   onClick={() => {
                     setEditFormData({
                       ...editFormData,
-                      pets: [...(editFormData.pets || []), { name: '', breed: '', weight: null }]
+                      pets: [...(editFormData.pets || []), { name: '', breed: '', weight: null, species: '', sex: '', birth_date: '' }]
                     });
                   }}
                 >
@@ -563,51 +706,109 @@ export default function Clients() {
                       <X className="w-4 h-4" />
                     </Button>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Nome do Pet</Label>
-                      <Input
-                        value={pet.name || ''}
-                        onChange={(e) => {
-                          const newPets = [...(editFormData.pets || [])];
-                          newPets[index] = { ...pet, name: e.target.value };
-                          setEditFormData({ ...editFormData, pets: newPets });
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Raça</Label>
-                      <Input
-                        value={pet.breed || ''}
-                        onChange={(e) => {
-                          const newPets = [...(editFormData.pets || [])];
-                          newPets[index] = { ...pet, breed: e.target.value };
-                          setEditFormData({ ...editFormData, pets: newPets });
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Peso (kg)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={pet.weight || ''}
-                      onChange={(e) => {
-                        const newPets = [...(editFormData.pets || [])];
-                        newPets[index] = { ...pet, weight: parseFloat(e.target.value) || null };
-                        setEditFormData({ ...editFormData, pets: newPets });
-                      }}
-                    />
-                  </div>
+                   <div className="grid grid-cols-2 gap-4">
+                     <div className="space-y-2">
+                       <Label>Nome do Pet</Label>
+                       <Input
+                         value={pet.name || ''}
+                         onChange={(e) => {
+                           const newPets = [...(editFormData.pets || [])];
+                           newPets[index] = { ...pet, name: e.target.value };
+                           setEditFormData({ ...editFormData, pets: newPets });
+                         }}
+                       />
+                     </div>
+                     <div className="space-y-2">
+                       <Label>Raça</Label>
+                       <Input
+                         value={pet.breed || ''}
+                         onChange={(e) => {
+                           const newPets = [...(editFormData.pets || [])];
+                           newPets[index] = { ...pet, breed: e.target.value };
+                           setEditFormData({ ...editFormData, pets: newPets });
+                         }}
+                       />
+                     </div>
+                   </div>
+                   <div className="grid grid-cols-2 gap-4">
+                     <div className="space-y-2">
+                       <Label>Espécie</Label>
+                       <Select 
+                         value={pet.species || ''} 
+                         onValueChange={(value) => {
+                           const newPets = [...(editFormData.pets || [])];
+                           newPets[index] = { ...pet, species: value };
+                           setEditFormData({ ...editFormData, pets: newPets });
+                         }}
+                       >
+                         <SelectTrigger>
+                           <SelectValue placeholder="Selecione" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="Cão">Cão</SelectItem>
+                           <SelectItem value="Gato">Gato</SelectItem>
+                           <SelectItem value="Ave">Ave</SelectItem>
+                           <SelectItem value="Roedor">Roedor</SelectItem>
+                           <SelectItem value="Outro">Outro</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
+                     <div className="space-y-2">
+                       <Label>Sexo</Label>
+                       <Select 
+                         value={pet.sex || ''} 
+                         onValueChange={(value) => {
+                           const newPets = [...(editFormData.pets || [])];
+                           newPets[index] = { ...pet, sex: value };
+                           setEditFormData({ ...editFormData, pets: newPets });
+                         }}
+                       >
+                         <SelectTrigger>
+                           <SelectValue placeholder="Sexo" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="Macho">Macho</SelectItem>
+                           <SelectItem value="Fêmea">Fêmea</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
+                   </div>
+                   <div className="grid grid-cols-2 gap-4">
+                     <div className="space-y-2">
+                       <Label>Peso (kg)</Label>
+                       <Input
+                         type="number"
+                         step="0.1"
+                         value={pet.weight || ''}
+                         onChange={(e) => {
+                           const newPets = [...(editFormData.pets || [])];
+                           newPets[index] = { ...pet, weight: parseFloat(e.target.value) || null };
+                           setEditFormData({ ...editFormData, pets: newPets });
+                         }}
+                       />
+                     </div>
+                     <div className="space-y-2">
+                       <Label>Nascimento</Label>
+                       <Input
+                         type="date"
+                         value={pet.birth_date || ''}
+                         onChange={(e) => {
+                           const newPets = [...(editFormData.pets || [])];
+                           newPets[index] = { ...pet, birth_date: e.target.value };
+                           setEditFormData({ ...editFormData, pets: newPets });
+                         }}
+                       />
+                     </div>
+                   </div>
                 </div>
               ))}
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="edit-notes">Observações</Label>
+              <Label htmlFor="edit-notes">Notas do Cliente</Label>
               <Textarea
                 id="edit-notes"
+                placeholder="Observações, preferências alimentares, alergias, etc."
                 value={editFormData.notes}
                 onChange={(e) => setEditFormData(prev => ({ ...prev, notes: e.target.value }))}
               />
