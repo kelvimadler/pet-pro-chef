@@ -17,19 +17,16 @@ import {
   Plus,
   Trash2,
   Thermometer,
-  Edit2,
-  Camera
+  Edit2
 } from "lucide-react";
 import { format } from "date-fns";
-import { QRCodeGenerator } from "@/components/QRCodeGenerator";
-import { QRCodeReader } from "@/components/QRCodeReader";
 
 export default function SanitaryLabels() {
   const { labels, loading, createLabel, updateLabel, printLabel, deleteLabel } = useSanitaryLabels();
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingLabel, setEditingLabel] = useState<SanitaryLabel | null>(null);
-  const [showQRReader, setShowQRReader] = useState(false);
+  
   const [formData, setFormData] = useState<CreateSanitaryLabelData>({
     product_name: "",
     expiry_datetime: "",
@@ -76,26 +73,6 @@ export default function SanitaryLabels() {
     setShowForm(true);
   };
 
-  const handleQRScan = (result: string) => {
-    try {
-      // Assume QR code contains the label ID
-      const label = labels.find(l => l.id === result);
-      if (label) {
-        handleEdit(label);
-      } else {
-        // Try to parse as JSON in case it contains label data
-        const data = JSON.parse(result);
-        if (data.id) {
-          const foundLabel = labels.find(l => l.id === data.id);
-          if (foundLabel) {
-            handleEdit(foundLabel);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Invalid QR code:', error);
-    }
-  };
 
   const cancelEdit = () => {
     setEditingLabel(null);
@@ -176,34 +153,18 @@ export default function SanitaryLabels() {
             Controle de validade para produtos da geladeira
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <Button 
-            variant="outline"
-            onClick={() => setShowQRReader(true)}
-            className="flex items-center gap-2 w-full sm:w-auto"
-          >
-            <Camera className="w-4 h-4" />
-            Ler QR Code
-          </Button>
-          <Button 
-            onClick={() => {
-              setEditingLabel(null);
-              setShowForm(!showForm);
-            }}
-            className="bg-gradient-primary hover:scale-105 transition-transform shadow-elegant w-full sm:w-auto"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nova Etiqueta
-          </Button>
-        </div>
+        <Button 
+          onClick={() => {
+            setEditingLabel(null);
+            setShowForm(!showForm);
+          }}
+          className="bg-gradient-primary hover:scale-105 transition-transform shadow-elegant"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Nova Etiqueta
+        </Button>
       </div>
 
-      {/* QR Reader */}
-      <QRCodeReader 
-        isOpen={showQRReader}
-        onClose={() => setShowQRReader(false)}
-        onScan={handleQRScan}
-      />
 
       {/* Form */}
       {showForm && (
@@ -305,7 +266,7 @@ export default function SanitaryLabels() {
       </Card>
 
       {/* Labels List */}
-      <div className="grid gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {filteredLabels.length === 0 ? (
           <Card className="shadow-card-hover border-border/50">
             <CardContent className="p-8 text-center">
@@ -349,7 +310,7 @@ export default function SanitaryLabels() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Calendar className="w-4 h-4" />
@@ -377,12 +338,8 @@ export default function SanitaryLabels() {
                        </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <AlertTriangle className="w-4 h-4" />
-                        <span className="font-medium">Status</span>
-                      </div>
-                      <div className="bg-accent/30 rounded-lg p-3">
+                    <div className="flex items-center justify-between bg-accent/30 rounded-lg p-3">
+                      <div>
                         <p className={`text-lg font-bold ${
                           statusInfo.urgency === "high" ? "text-red-600" :
                           statusInfo.urgency === "medium" ? "text-yellow-600" :
@@ -390,35 +347,31 @@ export default function SanitaryLabels() {
                         }`}>
                           {timeInfo}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-xs text-muted-foreground">
                           até o vencimento
                         </p>
                       </div>
-                    </div>
-
-                      <div className="space-y-2">
-                        <div className="text-sm text-muted-foreground font-medium">Ações</div>
-                        <div className="space-y-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="w-full flex items-center gap-2"
-                            onClick={() => handleEdit(label)}
-                          >
-                            <Edit2 className="w-4 h-4" />
-                            Editar
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="w-full flex items-center gap-2"
-                            onClick={() => printLabel(label)}
-                          >
-                            <Printer className="w-4 h-4" />
-                            Imprimir
-                          </Button>
-                        </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleEdit(label)}
+                          className="flex items-center gap-1"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                          Editar
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => printLabel(label)}
+                          className="flex items-center gap-1"
+                        >
+                          <Printer className="w-4 h-4" />
+                          Imprimir
+                        </Button>
                       </div>
+                    </div>
                   </div>
 
                   {label.observations && (
@@ -430,35 +383,6 @@ export default function SanitaryLabels() {
                     </div>
                   )}
 
-                  {/* Thermal Label Preview */}
-                  <div className="border-t border-border/50 pt-4">
-                    <div className="text-sm text-muted-foreground mb-2">Preview da Etiqueta Térmica:</div>
-                    <div className="bg-white border border-border rounded-lg p-3 max-w-xs">
-                      <div className="text-center space-y-1">
-                        <h4 className="font-bold text-sm text-gray-900">{label.product_name}</h4>
-                        <div className="text-xs text-gray-600 space-y-1">
-                          <p className="flex items-center justify-center gap-1">
-                            <Thermometer className="w-3 h-3" />
-                            {label.conservation_type}
-                          </p>
-                          <p>Validade: {format(new Date(label.expiry_datetime), "dd/MM/yyyy HH:mm")}</p>
-                          <p>Original: {format(new Date(label.original_expiry_date), "dd/MM/yyyy")}</p>
-                          {label.observations && (
-                            <p className="text-xs bg-gray-100 p-1 rounded">
-                              {label.observations}
-                            </p>
-                          )}
-                        </div>
-                         <div className="flex justify-center">
-                           <QRCodeGenerator 
-                             value={JSON.stringify({ id: label.id, type: 'sanitary_label' })}
-                             size={80}
-                             className="w-20 h-20"
-                           />
-                         </div>
-                      </div>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             );
