@@ -62,7 +62,7 @@ export function Layout({ children }: LayoutProps) {
                   href="https://wodev.com.br"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-500 hover:underline"
+                  className="text-green-500 hover:underline"
                 >
                   Wodev Digital
                 </a>
