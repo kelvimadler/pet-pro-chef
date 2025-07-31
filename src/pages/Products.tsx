@@ -67,14 +67,52 @@ export default function Products() {
       manage_stock: formData.manage_stock
     };
 
+    let result;
     if (editingProduct) {
-      await updateProduct(editingProduct.id, productData);
+      result = await updateProduct(editingProduct.id, productData);
+      
+      // Sync stock with WooCommerce if product has SKU and stock changed
+      if (result && productData.sku && isConfigured && productData.manage_stock) {
+        const oldStock = editingProduct.stock_quantity || 0;
+        const newStock = productData.stock_quantity;
+        if (oldStock !== newStock) {
+          try {
+            await syncStockToWooCommerce(productData.sku, newStock);
+          } catch (error) {
+            console.error('Failed to sync stock with WooCommerce:', error);
+          }
+        }
+      }
     } else {
-      await createProduct(productData);
+      result = await createProduct(productData);
+      
+      // Sync initial stock with WooCommerce for new products
+      if (result && productData.sku && isConfigured && productData.manage_stock) {
+        try {
+          await syncStockToWooCommerce(productData.sku, productData.stock_quantity);
+        } catch (error) {
+          console.error('Failed to sync initial stock with WooCommerce:', error);
+        }
+      }
     }
     
     setShowDialog(false);
     resetForm();
+  };
+
+  const handleStockUpdate = async (product: any, newStock: number) => {
+    const result = await updateStock(product.id, newStock);
+    
+    // Sync with WooCommerce if product has SKU
+    if (result && product.sku && isConfigured && product.manage_stock) {
+      try {
+        await syncStockToWooCommerce(product.sku, newStock);
+      } catch (error) {
+        console.error('Failed to sync stock with WooCommerce:', error);
+      }
+    }
+    
+    return result;
   };
 
   const handleEdit = (product: any) => {
@@ -333,8 +371,18 @@ export default function Products() {
                       Estoque
                     </div>
                     <div className="space-y-2">
-                      <div className="text-xl font-bold text-foreground">
-                        {product.stock_quantity || 0} un.
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min="0"
+                          value={product.stock_quantity || 0}
+                          onChange={(e) => {
+                            const newStock = parseInt(e.target.value) || 0;
+                            handleStockUpdate(product, newStock);
+                          }}
+                          className="w-20 h-8 text-sm"
+                        />
+                        <span className="text-sm text-muted-foreground">un.</span>
                       </div>
                       {product.sku && (
                         <div className="flex items-center gap-1">
