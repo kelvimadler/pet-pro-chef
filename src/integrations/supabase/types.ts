@@ -535,8 +535,11 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          manage_stock: boolean | null
           name: string
           package_sizes: number[] | null
+          sku: string | null
+          stock_quantity: number | null
           updated_at: string
           user_id: string
           validity_days: number
@@ -545,8 +548,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          manage_stock?: boolean | null
           name: string
           package_sizes?: number[] | null
+          sku?: string | null
+          stock_quantity?: number | null
           updated_at?: string
           user_id: string
           validity_days?: number
@@ -555,8 +561,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          manage_stock?: boolean | null
           name?: string
           package_sizes?: number[] | null
+          sku?: string | null
+          stock_quantity?: number | null
           updated_at?: string
           user_id?: string
           validity_days?: number
@@ -583,6 +592,9 @@ export type Database = {
           stock_percentage: number | null
           updated_at: string
           user_id: string
+          woocommerce_consumer_key: string | null
+          woocommerce_consumer_secret: string | null
+          woocommerce_url: string | null
         }
         Insert: {
           biscuits_validity?: number | null
@@ -603,6 +615,9 @@ export type Database = {
           stock_percentage?: number | null
           updated_at?: string
           user_id: string
+          woocommerce_consumer_key?: string | null
+          woocommerce_consumer_secret?: string | null
+          woocommerce_url?: string | null
         }
         Update: {
           biscuits_validity?: number | null
@@ -623,6 +638,9 @@ export type Database = {
           stock_percentage?: number | null
           updated_at?: string
           user_id?: string
+          woocommerce_consumer_key?: string | null
+          woocommerce_consumer_secret?: string | null
+          woocommerce_url?: string | null
         }
         Relationships: []
       }

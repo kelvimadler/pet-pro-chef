@@ -16,6 +16,9 @@ interface Settings {
   production_alerts: boolean;
   expiry_days: number;
   stock_percentage: number;
+  woocommerce_url: string;
+  woocommerce_consumer_key: string;
+  woocommerce_consumer_secret: string;
 }
 
 export function useSettings() {
@@ -31,7 +34,10 @@ export function useSettings() {
     stock_alerts: true,
     production_alerts: true,
     expiry_days: 3,
-    stock_percentage: 30
+    stock_percentage: 30,
+    woocommerce_url: '',
+    woocommerce_consumer_key: '',
+    woocommerce_consumer_secret: ''
   });
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -66,6 +72,9 @@ export function useSettings() {
           production_alerts: data.production_alerts !== null ? data.production_alerts : prev.production_alerts,
           expiry_days: data.expiry_days || prev.expiry_days,
           stock_percentage: data.stock_percentage || prev.stock_percentage,
+          woocommerce_url: data.woocommerce_url || prev.woocommerce_url,
+          woocommerce_consumer_key: data.woocommerce_consumer_key || prev.woocommerce_consumer_key,
+          woocommerce_consumer_secret: data.woocommerce_consumer_secret || prev.woocommerce_consumer_secret,
         }));
       }
     } catch (error) {
@@ -98,6 +107,9 @@ export function useSettings() {
           production_alerts: newSettings.production_alerts,
           expiry_days: newSettings.expiry_days,
           stock_percentage: newSettings.stock_percentage,
+          woocommerce_url: newSettings.woocommerce_url,
+          woocommerce_consumer_key: newSettings.woocommerce_consumer_key,
+          woocommerce_consumer_secret: newSettings.woocommerce_consumer_secret,
         })
         .eq('user_id', user.id);
 

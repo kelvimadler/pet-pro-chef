@@ -10,11 +10,16 @@ import {
   Building, 
   Bell, 
   Package,
-  Save
+  Save,
+  ShoppingCart,
+  TestTube
 } from "lucide-react";
+import { MaskedInput } from "@/components/ui/masked-input";
+import { useWooCommerce } from "@/hooks/useWooCommerce";
 
 export default function Settings() {
   const { settings, saveSettings } = useSettings();
+  const { testConnection } = useWooCommerce();
   const [formData, setFormData] = useState(settings);
 
   // Update formData when settings change
@@ -24,6 +29,10 @@ export default function Settings() {
 
   const handleSave = async () => {
     await saveSettings(formData);
+  };
+
+  const handleTestConnection = async () => {
+    await testConnection();
   };
   return (
     <div className="space-y-6">
@@ -128,6 +137,60 @@ export default function Settings() {
                   onChange={(e) => setFormData(prev => ({ ...prev, premium_validity: parseInt(e.target.value) || 45 }))}
                 />
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* WooCommerce API Settings */}
+        <Card className="shadow-card-hover border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5 text-primary" />
+              Integração WooCommerce
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="woocommerce-url">URL da Loja</Label>
+                <Input 
+                  id="woocommerce-url" 
+                  placeholder="https://minhaloja.com.br"
+                  value={formData.woocommerce_url}
+                  onChange={(e) => setFormData(prev => ({ ...prev, woocommerce_url: e.target.value }))}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="consumer-key">Consumer Key (CK)</Label>
+                  <MaskedInput 
+                    id="consumer-key" 
+                    placeholder="ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                    masked={!!formData.woocommerce_consumer_key}
+                    value={formData.woocommerce_consumer_key}
+                    onChange={(e) => setFormData(prev => ({ ...prev, woocommerce_consumer_key: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="consumer-secret">Consumer Secret (CS)</Label>
+                  <MaskedInput 
+                    id="consumer-secret" 
+                    placeholder="cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                    masked={!!formData.woocommerce_consumer_secret}
+                    value={formData.woocommerce_consumer_secret}
+                    onChange={(e) => setFormData(prev => ({ ...prev, woocommerce_consumer_secret: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <Button 
+                onClick={handleTestConnection}
+                variant="outline" 
+                className="w-full"
+                disabled={!formData.woocommerce_url || !formData.woocommerce_consumer_key || !formData.woocommerce_consumer_secret}
+              >
+                <TestTube className="w-4 h-4 mr-2" />
+                Testar Conexão
+              </Button>
             </div>
           </CardContent>
         </Card>

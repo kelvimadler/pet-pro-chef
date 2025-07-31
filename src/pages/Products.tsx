@@ -14,11 +14,17 @@ import {
   Edit,
   Calendar,
   Info,
-  ShoppingBag
+  ShoppingBag,
+  BarChart3,
+  Hash,
+  RefreshCw
 } from "lucide-react";
+import { useWooCommerce } from "@/hooks/useWooCommerce";
+import { Switch } from "@/components/ui/switch";
 
 export default function Products() {
-  const { products, loading, createProduct } = useProducts();
+  const { products, loading, createProduct, updateProduct, updateStock } = useProducts();
+  const { syncStockToWooCommerce, getStockFromWooCommerce, isConfigured } = useWooCommerce();
   const [searchTerm, setSearchTerm] = useState("");
   const [showDialog, setShowDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
@@ -26,7 +32,10 @@ export default function Products() {
     name: '',
     description: '',
     validity_days: '60',
-    package_sizes: '60,150'
+    package_sizes: '60,150',
+    sku: '',
+    stock_quantity: '0',
+    manage_stock: true
   });
 
   const resetForm = () => {
@@ -34,7 +43,10 @@ export default function Products() {
       name: '',
       description: '',
       validity_days: '60',
-      package_sizes: '60,150'
+      package_sizes: '60,150',
+      sku: '',
+      stock_quantity: '0',
+      manage_stock: true
     });
     setEditingProduct(null);
   };
@@ -49,12 +61,14 @@ export default function Products() {
       package_sizes: formData.package_sizes
         .split(',')
         .map(size => parseInt(size.trim()))
-        .filter(size => !isNaN(size))
+        .filter(size => !isNaN(size)),
+      sku: formData.sku || null,
+      stock_quantity: parseInt(formData.stock_quantity) || 0,
+      manage_stock: formData.manage_stock
     };
 
     if (editingProduct) {
-      // TODO: Implement updateProduct function in useProducts hook
-      console.log('Update product:', editingProduct.id, productData);
+      await updateProduct(editingProduct.id, productData);
     } else {
       await createProduct(productData);
     }
@@ -69,7 +83,10 @@ export default function Products() {
       name: product.name,
       description: product.description || '',
       validity_days: product.validity_days?.toString() || '60',
-      package_sizes: product.package_sizes?.join(', ') || '60, 150'
+      package_sizes: product.package_sizes?.join(', ') || '60, 150',
+      sku: product.sku || '',
+      stock_quantity: product.stock_quantity?.toString() || '0',
+      manage_stock: product.manage_stock ?? true
     });
     setShowDialog(true);
   };
@@ -163,6 +180,45 @@ export default function Products() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="sku">SKU (WooCommerce)</Label>
+                  <Input
+                    id="sku"
+                    value={formData.sku}
+                    onChange={(e) => setFormData(prev => ({ ...prev, sku: e.target.value }))}
+                    placeholder="PROD-001"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Código único para sincronização
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="stock-quantity">Estoque Inicial</Label>
+                  <Input
+                    id="stock-quantity"
+                    type="number"
+                    min="0"
+                    value={formData.stock_quantity}
+                    onChange={(e) => setFormData(prev => ({ ...prev, stock_quantity: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="manage-stock">Gerenciar Estoque</Label>
+                  <Switch
+                    id="manage-stock"
+                    checked={formData.manage_stock}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, manage_stock: checked }))}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Ativar controle de estoque para este produto
+                </p>
+              </div>
+
               <div className="flex gap-4 pt-4">
                 <Button
                   type="button"
@@ -246,7 +302,7 @@ export default function Products() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="space-y-3">
                     <div className="text-sm text-muted-foreground flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
@@ -268,6 +324,24 @@ export default function Products() {
                           {size}g
                         </Badge>
                       ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="text-sm text-muted-foreground flex items-center gap-1">
+                      <BarChart3 className="w-4 h-4" />
+                      Estoque
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-xl font-bold text-foreground">
+                        {product.stock_quantity || 0} un.
+                      </div>
+                      {product.sku && (
+                        <div className="flex items-center gap-1">
+                          <Hash className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">{product.sku}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -303,6 +377,24 @@ export default function Products() {
                     <Edit className="w-4 h-4" />
                     Editar
                   </Button>
+                  {product.sku && isConfigured && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex items-center gap-2"
+                      onClick={async () => {
+                        try {
+                          const wooStock = await getStockFromWooCommerce(product.sku);
+                          await updateStock(product.id, wooStock);
+                        } catch (error) {
+                          console.error('Sync failed:', error);
+                        }
+                      }}
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      Sync
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
