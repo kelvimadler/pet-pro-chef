@@ -1,135 +1,138 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useClients } from "@/hooks/useClients";
 import { usePets } from "@/hooks/usePets";
-import { useMenus } from "@/hooks/useMenus";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Users, 
   Plus, 
   Search, 
-  Phone, 
-  Mail,
-  MapPin,
-  Heart,
   Eye,
   Edit,
-  X
+  Trash2,
+  Copy
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Clients() {
   const { clients, loading, createClient, deleteClient, updateClient } = useClients();
-  const { createPet, refetch: refetchPets } = usePets();
-  const { menus } = useMenus();
+  const { pets, createPet, updatePet, deletePet } = usePets();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [showDialog, setShowDialog] = useState(false);
   const [viewDialog, setViewDialog] = useState(false);
   const [editDialog, setEditDialog] = useState(false);
   const [selectedClient, setSelectedClient] = useState<any>(null);
+  
   const [formData, setFormData] = useState({
+    // Dados do tutor
     name: '',
-    email: '',
-    phone: '',
-    address: '',
     cpf: '',
-    whatsapp: '',
-    pet_name: '',
-    pet_breed: '',
-    pet_weight: '',
-    pet_species: '',
-    pet_sex: '',
-    pet_birth_date: '',
-    notes: ''
+    address: '',
+    phone: '',
+    email: '',
+    // Dados do primeiro pet
+    petName: '',
+    petAge: '',
+    petBirthDate: '',
+    petWeight: '',
+    petBreed: '',
+    petSpecies: '',
+    petSex: ''
   });
 
   const [editFormData, setEditFormData] = useState({
+    // Dados do tutor
     name: '',
-    email: '',
-    phone: '',
-    address: '',
     cpf: '',
-    whatsapp: '',
-    pet_name: '',
-    pet_breed: '',
-    pet_weight: '',
-    pet_species: '',
-    pet_sex: '',
-    pet_birth_date: '',
-    notes: '',
-    pets: [] as Array<{ name: string; breed: string; weight: number | null; species: string; sex: string; birth_date: string }>,
+    address: '',
+    phone: '',
+    email: '',
+    // Pets adicionais
+    newPets: [] as Array<{
+      name: string;
+      age: string;
+      birth_date: string;
+      weight: string;
+      breed: string;
+      species: string;
+      sex: string;
+    }>
   });
-
-  // Only use real clients from Supabase
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createClient({
-      ...formData,
-      pet_weight: formData.pet_weight ? parseFloat(formData.pet_weight) : null
-    });
-    setShowDialog(false);
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      address: '',
-      cpf: '',
-      whatsapp: '',
-      pet_name: '',
-      pet_breed: '',
-      pet_weight: '',
-      pet_species: '',
-      pet_sex: '',
-      pet_birth_date: '',
-      notes: ''
-    });
+    
+    if (!formData.petName.trim()) {
+      toast({
+        title: "Nome do pet obrigatório",
+        description: "É necessário informar pelo menos um pet para gerar a senha do cliente",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Criar cliente
+    const client = await createClient({
+      name: formData.name,
+      cpf: formData.cpf || null,
+      address: formData.address || null,
+      phone: formData.phone || null,
+      email: formData.email || null,
+    }, formData.petName);
+
+    if (client) {
+      // Criar o primeiro pet
+      await createPet({
+        client_id: client.id,
+        name: formData.petName,
+        age: formData.petAge || null,
+        birth_date: formData.petBirthDate || null,
+        weight: formData.petWeight ? parseFloat(formData.petWeight) : null,
+        breed: formData.petBreed || null,
+        species: formData.petSpecies || null,
+        sex: formData.petSex || null,
+      });
+
+      setShowDialog(false);
+      resetForm();
+    }
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedClient) return;
     
-    // Filter out empty pets before saving
-    const validPets = editFormData.pets.filter(pet => 
-      pet.name.trim() !== '' && pet.breed.trim() !== ''
-    );
-    
-    // Save additional pets to pets table
-    for (const pet of validPets) {
-      await createPet({
-        client_id: selectedClient.id,
-        name: pet.name,
-        breed: pet.breed,
-        weight: pet.weight,
-        species: pet.species || '',
-        sex: pet.sex || '',
-        birth_date: pet.birth_date || null,
-        notes: ''
-      });
-    }
-    
+    // Atualizar dados do cliente
     await updateClient(selectedClient.id, {
       name: editFormData.name,
-      email: editFormData.email,
-      phone: editFormData.phone,
-      address: editFormData.address,
-      cpf: editFormData.cpf,
-      whatsapp: editFormData.whatsapp,
-      pet_name: editFormData.pet_name,
-      pet_breed: editFormData.pet_breed,
-      pet_weight: editFormData.pet_weight ? parseFloat(editFormData.pet_weight) : null,
-      notes: editFormData.notes
+      cpf: editFormData.cpf || null,
+      address: editFormData.address || null,
+      phone: editFormData.phone || null,
+      email: editFormData.email || null,
     });
-    
-    // Atualizar a lista de pets após adicionar novos
-    await refetchPets();
+
+    // Criar novos pets
+    for (const pet of editFormData.newPets) {
+      if (pet.name.trim()) {
+        await createPet({
+          client_id: selectedClient.id,
+          name: pet.name,
+          age: pet.age || null,
+          birth_date: pet.birth_date || null,
+          weight: pet.weight ? parseFloat(pet.weight) : null,
+          breed: pet.breed || null,
+          species: pet.species || null,
+          sex: pet.sex || null,
+        });
+      }
+    }
     
     setEditDialog(false);
     setSelectedClient(null);
@@ -139,19 +142,11 @@ export default function Clients() {
     setSelectedClient(client);
     setEditFormData({
       name: client.name || '',
-      email: client.email || '',
-      phone: client.phone || '',
-      address: client.address || '',
       cpf: client.cpf || '',
-      whatsapp: client.whatsapp || '',
-      pet_name: client.pet_name || '',
-      pet_breed: client.pet_breed || '',
-      pet_weight: client.pet_weight?.toString() || '',
-      pet_species: client.pet_species || '',
-      pet_sex: client.pet_sex || '',
-      pet_birth_date: client.pet_birth_date || '',
-      notes: client.notes || '',
-      pets: []
+      address: client.address || '',
+      phone: client.phone || '',
+      email: client.email || '',
+      newPets: []
     });
     setEditDialog(true);
   };
@@ -161,21 +156,66 @@ export default function Clients() {
     setViewDialog(true);
   };
 
+  const handleDelete = async (clientId: string) => {
+    await deleteClient(clientId);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      cpf: '',
+      address: '',
+      phone: '',
+      email: '',
+      petName: '',
+      petAge: '',
+      petBirthDate: '',
+      petWeight: '',
+      petBreed: '',
+      petSpecies: '',
+      petSex: ''
+    });
+  };
+
+  const addNewPet = () => {
+    setEditFormData(prev => ({
+      ...prev,
+      newPets: [...prev.newPets, {
+        name: '',
+        age: '',
+        birth_date: '',
+        weight: '',
+        breed: '',
+        species: '',
+        sex: ''
+      }]
+    }));
+  };
+
+  const removeNewPet = (index: number) => {
+    setEditFormData(prev => ({
+      ...prev,
+      newPets: prev.newPets.filter((_, i) => i !== index)
+    }));
+  };
+
+  const copyPassword = (password: string) => {
+    navigator.clipboard.writeText(password);
+    toast({
+      title: "Senha copiada!",
+      description: "A senha foi copiada para a área de transferência.",
+    });
+  };
+
+  const getClientPets = (clientId: string) => {
+    return pets.filter(pet => pet.client_id === clientId);
+  };
+
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.password.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Ativo":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "Inativo":
-        return "bg-red-100 text-red-800 border-red-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -194,116 +234,135 @@ export default function Clients() {
               Novo Cliente
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Novo Cliente</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nome *</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    required
-                  />
+              {/* Dados do Tutor */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-foreground">Dados do Tutor</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Nome Completo *</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cpf">CPF</Label>
+                    <Input
+                      id="cpf"
+                      value={formData.cpf}
+                      onChange={(e) => setFormData(prev => ({ ...prev, cpf: e.target.value }))}
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="address">Endereço</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    id="address"
+                    value={formData.address}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                   />
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Telefone</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="whatsapp">WhatsApp</Label>
-                  <Input
-                    id="whatsapp"
-                    value={formData.whatsapp}
-                    onChange={(e) => setFormData(prev => ({ ...prev, whatsapp: e.target.value }))}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="cpf">CPF</Label>
-                  <Input
-                    id="cpf"
-                    value={formData.cpf}
-                    onChange={(e) => setFormData(prev => ({ ...prev, cpf: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="pet-name">Nome do Pet</Label>
-                  <Input
-                    id="pet-name"
-                    value={formData.pet_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, pet_name: e.target.value }))}
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Telefone</Label>
+                    <Input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">Endereço</Label>
-                <Input
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="pet-breed">Raça do Pet</Label>
-                  <Input
-                    id="pet-breed"
-                    value={formData.pet_breed}
-                    onChange={(e) => setFormData(prev => ({ ...prev, pet_breed: e.target.value }))}
-                  />
+
+              {/* Dados do Pet */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-foreground">Dados do Pet</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="petName">Nome do Pet *</Label>
+                    <Input
+                      id="petName"
+                      value={formData.petName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, petName: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="petAge">Idade</Label>
+                    <Input
+                      id="petAge"
+                      value={formData.petAge}
+                      onChange={(e) => setFormData(prev => ({ ...prev, petAge: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="petBirthDate">Data de Nascimento</Label>
+                    <Input
+                      id="petBirthDate"
+                      type="date"
+                      value={formData.petBirthDate}
+                      onChange={(e) => setFormData(prev => ({ ...prev, petBirthDate: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="petWeight">Peso (kg)</Label>
+                    <Input
+                      id="petWeight"
+                      type="number"
+                      step="0.1"
+                      value={formData.petWeight}
+                      onChange={(e) => setFormData(prev => ({ ...prev, petWeight: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="petBreed">Raça</Label>
+                    <Input
+                      id="petBreed"
+                      value={formData.petBreed}
+                      onChange={(e) => setFormData(prev => ({ ...prev, petBreed: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="petSpecies">Espécie</Label>
+                    <Select value={formData.petSpecies} onValueChange={(value) => setFormData(prev => ({ ...prev, petSpecies: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a espécie" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Cão">Cão</SelectItem>
+                        <SelectItem value="Gato">Gato</SelectItem>
+                        <SelectItem value="Ave">Ave</SelectItem>
+                        <SelectItem value="Roedor">Roedor</SelectItem>
+                        <SelectItem value="Outro">Outro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="pet-species">Espécie do Pet</Label>
-                  <Select value={formData.pet_species} onValueChange={(value) => setFormData(prev => ({ ...prev, pet_species: value }))}>
+                  <Label htmlFor="petSex">Sexo</Label>
+                  <Select value={formData.petSex} onValueChange={(value) => setFormData(prev => ({ ...prev, petSex: value }))}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione a espécie" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Cão">Cão</SelectItem>
-                      <SelectItem value="Gato">Gato</SelectItem>
-                      <SelectItem value="Ave">Ave</SelectItem>
-                      <SelectItem value="Roedor">Roedor</SelectItem>
-                      <SelectItem value="Outro">Outro</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="pet-weight">Peso do Pet (kg)</Label>
-                  <Input
-                    id="pet-weight"
-                    type="number"
-                    step="0.1"
-                    value={formData.pet_weight}
-                    onChange={(e) => setFormData(prev => ({ ...prev, pet_weight: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="pet-sex">Sexo do Pet</Label>
-                  <Select value={formData.pet_sex} onValueChange={(value) => setFormData(prev => ({ ...prev, pet_sex: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sexo" />
+                      <SelectValue placeholder="Selecione o sexo" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Macho">Macho</SelectItem>
@@ -311,25 +370,8 @@ export default function Clients() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="pet-birth-date">Nascimento do Pet</Label>
-                  <Input
-                    id="pet-birth-date"
-                    type="date"
-                    value={formData.pet_birth_date}
-                    onChange={(e) => setFormData(prev => ({ ...prev, pet_birth_date: e.target.value }))}
-                  />
-                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notas do Cliente</Label>
-                <Textarea
-                  id="notes"
-                  placeholder="Observações, preferências alimentares, alergias, etc."
-                  value={formData.notes}
-                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                />
-              </div>
+
               <div className="flex gap-4 pt-4">
                 <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
                   Cancelar
@@ -349,7 +391,7 @@ export default function Clients() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
-              placeholder="Buscar por nome, email ou ID..." 
+              placeholder="Buscar por nome, senha ou email..." 
               className="pl-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -358,182 +400,219 @@ export default function Clients() {
         </CardContent>
       </Card>
 
-      {/* Clients List */}
-      <div className="grid gap-4">
-        {loading ? (
-          <div className="flex items-center justify-center h-32">
-            <p className="text-muted-foreground">Carregando clientes...</p>
-          </div>
-        ) : filteredClients.length === 0 ? (
-          <Card className="shadow-card-hover border-border/50">
-            <CardContent className="p-8 text-center">
+      {/* Clients Table */}
+      <Card className="shadow-card-hover border-border/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            Clientes Cadastrados
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center justify-center h-32">
+              <p className="text-muted-foreground">Carregando clientes...</p>
+            </div>
+          ) : filteredClients.length === 0 ? (
+            <div className="text-center py-8">
               <p className="text-muted-foreground">
                 {searchTerm ? "Nenhum cliente encontrado para a busca." : "Nenhum cliente cadastrado ainda."}
               </p>
-            </CardContent>
-          </Card>
-        ) : (
-          filteredClients.map((client) => (
-          <Card key={client.id} className="shadow-card-hover border-border/50 hover:shadow-elegant transition-all">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <CardTitle className="text-lg text-foreground flex items-center gap-2">
-                    <Users className="w-5 h-5 text-primary" />
-                    {client.name}
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Cliente desde {new Date(client.created_at).toLocaleDateString("pt-BR")}
-                  </p>
-                </div>
-                <Badge 
-                  variant="outline" 
-                  className="bg-green-100 text-green-800 border-green-200"
-                >
-                  Ativo
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-3">
-                  <div className="text-sm text-muted-foreground font-medium">Contato</div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Mail className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-foreground">{client.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Phone className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-foreground">{client.phone}</span>
-                    </div>
-                    <div className="flex items-start gap-2 text-sm">
-                      <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
-                      <span className="text-foreground">{client.address}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Heart className="w-4 h-4" />
-                    <span className="text-sm font-medium">Pets</span>
-                  </div>
-                  <div className="space-y-2">
-                    {client.pet_name ? (
-                      <div className="bg-accent/30 rounded-lg p-3">
-                        <p className="font-medium text-foreground text-sm">{client.pet_name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {client.pet_breed} {client.pet_weight && `• ${client.pet_weight}kg`}
-                        </p>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-muted-foreground">Nenhum pet cadastrado</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="text-sm text-muted-foreground font-medium">Estatísticas</div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Cardápios ativos:</span>
-                      <span className="font-medium text-primary">
-                        {menus.filter(menu => menu.client_id === client.id && menu.is_active).length}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Total de pedidos:</span>
-                      <span className="font-medium text-foreground">0</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Pets cadastrados:</span>
-                      <span className="font-medium text-foreground">{client.pet_name ? 1 : 0}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-2 pt-2 border-t border-border/50">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex items-center gap-2"
-                  onClick={() => handleView(client)}
-                >
-                  <Eye className="w-4 h-4" />
-                  Visualizar
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex items-center gap-2"
-                  onClick={() => handleEdit(client)}
-                >
-                  <Edit className="w-4 h-4" />
-                  Editar
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex items-center gap-2"
-                  onClick={() => {
-                    if (confirm(`Deseja excluir o cliente ${client.name}?`)) {
-                      deleteClient(client.id);
-                    }
-                  }}
-                >
-                  <Heart className="w-4 h-4" />
-                  Excluir
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          ))
-        )}
-      </div>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Senha</TableHead>
+                  <TableHead>Pet</TableHead>
+                  <TableHead>Nome do Tutor</TableHead>
+                  <TableHead>Telefone</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Endereço</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredClients.map((client) => {
+                  const clientPets = getClientPets(client.id);
+                  return (
+                    <TableRow key={client.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <code className="bg-accent px-2 py-1 rounded text-sm font-mono">
+                            {client.password}
+                          </code>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyPassword(client.password)}
+                          >
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {clientPets.length > 0 ? (
+                          <div className="space-y-1">
+                            <p className="font-medium">{clientPets[0].name}</p>
+                            {clientPets.length > 1 && (
+                              <p className="text-xs text-muted-foreground">
+                                +{clientPets.length - 1} pets
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">Nenhum pet</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="font-medium">{client.name}</TableCell>
+                      <TableCell>{client.phone || '-'}</TableCell>
+                      <TableCell>{client.email || '-'}</TableCell>
+                      <TableCell className="max-w-[200px] truncate">{client.address || '-'}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleView(client)}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(client)}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDelete(client.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       {/* View Client Dialog */}
       <Dialog open={viewDialog} onOpenChange={setViewDialog}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary" />
-              {selectedClient?.name}
-            </DialogTitle>
+            <DialogTitle>Detalhes do Cliente</DialogTitle>
           </DialogHeader>
           {selectedClient && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-semibold text-foreground mb-2">Informações de Contato</h3>
-                  <div className="space-y-2 text-sm">
-                    <p><span className="text-muted-foreground">Email:</span> {selectedClient.email || 'Não informado'}</p>
-                    <p><span className="text-muted-foreground">Telefone:</span> {selectedClient.phone || 'Não informado'}</p>
-                    <p><span className="text-muted-foreground">Endereço:</span> {selectedClient.address || 'Não informado'}</p>
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Dados do Tutor</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Nome</Label>
+                    <p className="text-foreground">{selectedClient.name}</p>
                   </div>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground mb-2">Informações do Pet</h3>
-                  <div className="space-y-2 text-sm">
-                    <p><span className="text-muted-foreground">Nome:</span> {selectedClient.pet_name || 'Não informado'}</p>
-                    <p><span className="text-muted-foreground">Raça:</span> {selectedClient.pet_breed || 'Não informado'}</p>
-                    <p><span className="text-muted-foreground">Peso:</span> {selectedClient.pet_weight ? `${selectedClient.pet_weight}kg` : 'Não informado'}</p>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Senha</Label>
+                    <div className="flex items-center gap-2">
+                      <code className="bg-accent px-2 py-1 rounded text-sm font-mono">
+                        {selectedClient.password}
+                      </code>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => copyPassword(selectedClient.password)}
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">CPF</Label>
+                    <p className="text-foreground">{selectedClient.cpf || '-'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Telefone</Label>
+                    <p className="text-foreground">{selectedClient.phone || '-'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Email</Label>
+                    <p className="text-foreground">{selectedClient.email || '-'}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Endereço</Label>
+                    <p className="text-foreground">{selectedClient.address || '-'}</p>
                   </div>
                 </div>
               </div>
-              {selectedClient.notes && (
-                <div>
-                  <h3 className="font-semibold text-foreground mb-2">Observações</h3>
-                  <p className="text-sm text-muted-foreground bg-accent/20 p-3 rounded-lg">{selectedClient.notes}</p>
-                </div>
-              )}
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">Informações do Sistema</h3>
-                <div className="text-sm text-muted-foreground">
-                  <p>Cliente desde: {new Date(selectedClient.created_at).toLocaleDateString('pt-BR')}</p>
-                  <p>Última atualização: {new Date(selectedClient.updated_at).toLocaleDateString('pt-BR')}</p>
-                </div>
+              
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Pets</h3>
+                {getClientPets(selectedClient.id).length > 0 ? (
+                  <div className="space-y-3">
+                    {getClientPets(selectedClient.id).map((pet) => (
+                      <div key={pet.id} className="border rounded-lg p-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-sm font-medium text-muted-foreground">Nome</Label>
+                            <p className="font-medium">{pet.name}</p>
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium text-muted-foreground">Idade</Label>
+                            <p>{pet.age || '-'}</p>
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium text-muted-foreground">Raça</Label>
+                            <p>{pet.breed || '-'}</p>
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium text-muted-foreground">Espécie</Label>
+                            <p>{pet.species || '-'}</p>
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium text-muted-foreground">Sexo</Label>
+                            <p>{pet.sex || '-'}</p>
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium text-muted-foreground">Peso</Label>
+                            <p>{pet.weight ? `${pet.weight}kg` : '-'}</p>
+                          </div>
+                          {pet.birth_date && (
+                            <div className="col-span-2">
+                              <Label className="text-sm font-medium text-muted-foreground">Data de Nascimento</Label>
+                              <p>{new Date(pet.birth_date).toLocaleDateString('pt-BR')}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground">Nenhum pet cadastrado</p>
+                )}
               </div>
             </div>
           )}
@@ -542,281 +621,221 @@ export default function Clients() {
 
       {/* Edit Client Dialog */}
       <Dialog open={editDialog} onOpenChange={setEditDialog}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Cliente</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleEditSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-name">Nome *</Label>
-                <Input
-                  id="edit-name"
-                  value={editFormData.name}
-                  onChange={(e) => setEditFormData(prev => ({ ...prev, name: e.target.value }))}
-                  required
-                />
+            {/* Dados do Tutor */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-foreground">Dados do Tutor</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="editName">Nome Completo *</Label>
+                  <Input
+                    id="editName"
+                    value={editFormData.name}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, name: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="editCpf">CPF</Label>
+                  <Input
+                    id="editCpf"
+                    value={editFormData.cpf}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, cpf: e.target.value }))}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-email">Email</Label>
+                <Label htmlFor="editAddress">Endereço</Label>
                 <Input
-                  id="edit-email"
-                  type="email"
-                  value={editFormData.email}
-                  onChange={(e) => setEditFormData(prev => ({ ...prev, email: e.target.value }))}
+                  id="editAddress"
+                  value={editFormData.address}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, address: e.target.value }))}
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="editPhone">Telefone</Label>
+                  <Input
+                    id="editPhone"
+                    value={editFormData.phone}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="editEmail">Email</Label>
+                  <Input
+                    id="editEmail"
+                    type="email"
+                    value={editFormData.email}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, email: e.target.value }))}
+                  />
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-phone">Telefone</Label>
-                <Input
-                  id="edit-phone"
-                  value={editFormData.phone}
-                  onChange={(e) => setEditFormData(prev => ({ ...prev, phone: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-whatsapp">WhatsApp</Label>
-                <Input
-                  id="edit-whatsapp"
-                  value={editFormData.whatsapp}
-                  onChange={(e) => setEditFormData(prev => ({ ...prev, whatsapp: e.target.value }))}
-                />
-              </div>
+
+            {/* Pets Existentes */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-foreground">Pets Existentes</h3>
+              {selectedClient && getClientPets(selectedClient.id).length > 0 ? (
+                <div className="space-y-2">
+                  {getClientPets(selectedClient.id).map((pet) => (
+                    <div key={pet.id} className="flex items-center justify-between bg-accent/30 rounded-lg p-3">
+                      <div>
+                        <p className="font-medium">{pet.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {pet.breed} • {pet.species} • {pet.sex}
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deletePet(pet.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground">Nenhum pet cadastrado</p>
+              )}
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-cpf">CPF</Label>
-                <Input
-                  id="edit-cpf"
-                  value={editFormData.cpf}
-                  onChange={(e) => setEditFormData(prev => ({ ...prev, cpf: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-pet-name">Nome do Pet</Label>
-                <Input
-                  id="edit-pet-name"
-                  value={editFormData.pet_name}
-                  onChange={(e) => setEditFormData(prev => ({ ...prev, pet_name: e.target.value }))}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-address">Endereço</Label>
-              <Input
-                id="edit-address"
-                value={editFormData.address}
-                onChange={(e) => setEditFormData(prev => ({ ...prev, address: e.target.value }))}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-pet-breed">Raça do Pet</Label>
-                <Input
-                  id="edit-pet-breed"
-                  value={editFormData.pet_breed}
-                  onChange={(e) => setEditFormData(prev => ({ ...prev, pet_breed: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-pet-species">Espécie do Pet</Label>
-                <Select value={editFormData.pet_species} onValueChange={(value) => setEditFormData(prev => ({ ...prev, pet_species: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione a espécie" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Cão">Cão</SelectItem>
-                    <SelectItem value="Gato">Gato</SelectItem>
-                    <SelectItem value="Ave">Ave</SelectItem>
-                    <SelectItem value="Roedor">Roedor</SelectItem>
-                    <SelectItem value="Outro">Outro</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-pet-weight">Peso do Pet (kg)</Label>
-                <Input
-                  id="edit-pet-weight"
-                  type="number"
-                  step="0.1"
-                  value={editFormData.pet_weight}
-                  onChange={(e) => setEditFormData(prev => ({ ...prev, pet_weight: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-pet-sex">Sexo do Pet</Label>
-                <Select value={editFormData.pet_sex} onValueChange={(value) => setEditFormData(prev => ({ ...prev, pet_sex: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sexo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Macho">Macho</SelectItem>
-                    <SelectItem value="Fêmea">Fêmea</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-pet-birth-date">Nascimento do Pet</Label>
-                <Input
-                  id="edit-pet-birth-date"
-                  type="date"
-                  value={editFormData.pet_birth_date}
-                  onChange={(e) => setEditFormData(prev => ({ ...prev, pet_birth_date: e.target.value }))}
-                />
-              </div>
-            </div>
-            
-            {/* Multiple pets section */}
-            <div className="border-t pt-4">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="font-medium flex items-center gap-2">
-                  <Heart className="w-4 h-4" />
-                  Pets Adicionais
-                </h4>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setEditFormData({
-                      ...editFormData,
-                      pets: [...(editFormData.pets || []), { name: '', breed: '', weight: null, species: '', sex: '', birth_date: '' }]
-                    });
-                  }}
-                >
+
+            {/* Adicionar Novos Pets */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-foreground">Adicionar Novos Pets</h3>
+                <Button type="button" variant="outline" onClick={addNewPet}>
                   <Plus className="w-4 h-4 mr-2" />
                   Adicionar Pet
                 </Button>
               </div>
               
-              {/* Multiple pets */}
-              {editFormData.pets && editFormData.pets.map((pet, index) => (
-                <div key={index} className="space-y-4 p-4 border rounded-lg relative mb-4">
-                  <div className="flex justify-between items-center">
-                    <h5 className="font-medium text-sm">Pet {index + 1}</h5>
+              {editFormData.newPets.map((pet, index) => (
+                <div key={index} className="border rounded-lg p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium">Novo Pet {index + 1}</h4>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => {
-                        const newPets = editFormData.pets?.filter((_, i) => i !== index) || [];
-                        setEditFormData({ ...editFormData, pets: newPets });
-                      }}
+                      onClick={() => removeNewPet(index)}
                     >
-                      <X className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
-                   <div className="grid grid-cols-2 gap-4">
-                     <div className="space-y-2">
-                       <Label>Nome do Pet</Label>
-                       <Input
-                         value={pet.name || ''}
-                         onChange={(e) => {
-                           const newPets = [...(editFormData.pets || [])];
-                           newPets[index] = { ...pet, name: e.target.value };
-                           setEditFormData({ ...editFormData, pets: newPets });
-                         }}
-                       />
-                     </div>
-                     <div className="space-y-2">
-                       <Label>Raça</Label>
-                       <Input
-                         value={pet.breed || ''}
-                         onChange={(e) => {
-                           const newPets = [...(editFormData.pets || [])];
-                           newPets[index] = { ...pet, breed: e.target.value };
-                           setEditFormData({ ...editFormData, pets: newPets });
-                         }}
-                       />
-                     </div>
-                   </div>
-                   <div className="grid grid-cols-2 gap-4">
-                     <div className="space-y-2">
-                       <Label>Espécie</Label>
-                       <Select 
-                         value={pet.species || ''} 
-                         onValueChange={(value) => {
-                           const newPets = [...(editFormData.pets || [])];
-                           newPets[index] = { ...pet, species: value };
-                           setEditFormData({ ...editFormData, pets: newPets });
-                         }}
-                       >
-                         <SelectTrigger>
-                           <SelectValue placeholder="Selecione" />
-                         </SelectTrigger>
-                         <SelectContent>
-                           <SelectItem value="Cão">Cão</SelectItem>
-                           <SelectItem value="Gato">Gato</SelectItem>
-                           <SelectItem value="Ave">Ave</SelectItem>
-                           <SelectItem value="Roedor">Roedor</SelectItem>
-                           <SelectItem value="Outro">Outro</SelectItem>
-                         </SelectContent>
-                       </Select>
-                     </div>
-                     <div className="space-y-2">
-                       <Label>Sexo</Label>
-                       <Select 
-                         value={pet.sex || ''} 
-                         onValueChange={(value) => {
-                           const newPets = [...(editFormData.pets || [])];
-                           newPets[index] = { ...pet, sex: value };
-                           setEditFormData({ ...editFormData, pets: newPets });
-                         }}
-                       >
-                         <SelectTrigger>
-                           <SelectValue placeholder="Sexo" />
-                         </SelectTrigger>
-                         <SelectContent>
-                           <SelectItem value="Macho">Macho</SelectItem>
-                           <SelectItem value="Fêmea">Fêmea</SelectItem>
-                         </SelectContent>
-                       </Select>
-                     </div>
-                   </div>
-                   <div className="grid grid-cols-2 gap-4">
-                     <div className="space-y-2">
-                       <Label>Peso (kg)</Label>
-                       <Input
-                         type="number"
-                         step="0.1"
-                         value={pet.weight || ''}
-                         onChange={(e) => {
-                           const newPets = [...(editFormData.pets || [])];
-                           newPets[index] = { ...pet, weight: parseFloat(e.target.value) || null };
-                           setEditFormData({ ...editFormData, pets: newPets });
-                         }}
-                       />
-                     </div>
-                     <div className="space-y-2">
-                       <Label>Nascimento</Label>
-                       <Input
-                         type="date"
-                         value={pet.birth_date || ''}
-                         onChange={(e) => {
-                           const newPets = [...(editFormData.pets || [])];
-                           newPets[index] = { ...pet, birth_date: e.target.value };
-                           setEditFormData({ ...editFormData, pets: newPets });
-                         }}
-                       />
-                     </div>
-                   </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Nome do Pet *</Label>
+                      <Input
+                        value={pet.name}
+                        onChange={(e) => {
+                          const newPets = [...editFormData.newPets];
+                          newPets[index].name = e.target.value;
+                          setEditFormData(prev => ({ ...prev, newPets }));
+                        }}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Idade</Label>
+                      <Input
+                        value={pet.age}
+                        onChange={(e) => {
+                          const newPets = [...editFormData.newPets];
+                          newPets[index].age = e.target.value;
+                          setEditFormData(prev => ({ ...prev, newPets }));
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Data de Nascimento</Label>
+                      <Input
+                        type="date"
+                        value={pet.birth_date}
+                        onChange={(e) => {
+                          const newPets = [...editFormData.newPets];
+                          newPets[index].birth_date = e.target.value;
+                          setEditFormData(prev => ({ ...prev, newPets }));
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Peso (kg)</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={pet.weight}
+                        onChange={(e) => {
+                          const newPets = [...editFormData.newPets];
+                          newPets[index].weight = e.target.value;
+                          setEditFormData(prev => ({ ...prev, newPets }));
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Raça</Label>
+                      <Input
+                        value={pet.breed}
+                        onChange={(e) => {
+                          const newPets = [...editFormData.newPets];
+                          newPets[index].breed = e.target.value;
+                          setEditFormData(prev => ({ ...prev, newPets }));
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Espécie</Label>
+                      <Select
+                        value={pet.species}
+                        onValueChange={(value) => {
+                          const newPets = [...editFormData.newPets];
+                          newPets[index].species = value;
+                          setEditFormData(prev => ({ ...prev, newPets }));
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a espécie" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Cão">Cão</SelectItem>
+                          <SelectItem value="Gato">Gato</SelectItem>
+                          <SelectItem value="Ave">Ave</SelectItem>
+                          <SelectItem value="Roedor">Roedor</SelectItem>
+                          <SelectItem value="Outro">Outro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2 col-span-2">
+                      <Label>Sexo</Label>
+                      <Select
+                        value={pet.sex}
+                        onValueChange={(value) => {
+                          const newPets = [...editFormData.newPets];
+                          newPets[index].sex = value;
+                          setEditFormData(prev => ({ ...prev, newPets }));
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o sexo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Macho">Macho</SelectItem>
+                          <SelectItem value="Fêmea">Fêmea</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="edit-notes">Notas do Cliente</Label>
-              <Textarea
-                id="edit-notes"
-                placeholder="Observações, preferências alimentares, alergias, etc."
-                value={editFormData.notes}
-                onChange={(e) => setEditFormData(prev => ({ ...prev, notes: e.target.value }))}
-              />
-            </div>
+
             <div className="flex gap-4 pt-4">
               <Button type="button" variant="outline" onClick={() => setEditDialog(false)}>
                 Cancelar

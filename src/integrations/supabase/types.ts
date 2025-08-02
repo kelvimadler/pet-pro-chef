@@ -22,14 +22,10 @@ export type Database = {
           email: string | null
           id: string
           name: string
-          notes: string | null
-          pet_breed: string | null
-          pet_name: string | null
-          pet_weight: number | null
+          password: string
           phone: string | null
           updated_at: string
           user_id: string
-          whatsapp: string | null
         }
         Insert: {
           address?: string | null
@@ -38,14 +34,10 @@ export type Database = {
           email?: string | null
           id?: string
           name: string
-          notes?: string | null
-          pet_breed?: string | null
-          pet_name?: string | null
-          pet_weight?: number | null
+          password: string
           phone?: string | null
           updated_at?: string
           user_id: string
-          whatsapp?: string | null
         }
         Update: {
           address?: string | null
@@ -54,14 +46,10 @@ export type Database = {
           email?: string | null
           id?: string
           name?: string
-          notes?: string | null
-          pet_breed?: string | null
-          pet_name?: string | null
-          pet_weight?: number | null
+          password?: string
           phone?: string | null
           updated_at?: string
           user_id?: string
-          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -327,15 +315,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "menus_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       notifications: {
         Row: {
@@ -375,11 +355,10 @@ export type Database = {
           age: string | null
           birth_date: string | null
           breed: string | null
-          client_id: string | null
+          client_id: string
           created_at: string
           id: string
           name: string
-          notes: string | null
           sex: string | null
           species: string | null
           updated_at: string
@@ -390,11 +369,10 @@ export type Database = {
           age?: string | null
           birth_date?: string | null
           breed?: string | null
-          client_id?: string | null
+          client_id: string
           created_at?: string
           id?: string
           name: string
-          notes?: string | null
           sex?: string | null
           species?: string | null
           updated_at?: string
@@ -405,11 +383,10 @@ export type Database = {
           age?: string | null
           birth_date?: string | null
           breed?: string | null
-          client_id?: string | null
+          client_id?: string
           created_at?: string
           id?: string
           name?: string
-          notes?: string | null
           sex?: string | null
           species?: string | null
           updated_at?: string
@@ -688,7 +665,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_client_password: {
+        Args: { pet_name: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

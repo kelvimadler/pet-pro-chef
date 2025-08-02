@@ -14,7 +14,6 @@ export interface Pet {
   species?: string;
   sex?: string;
   birth_date?: string;
-  notes?: string;
   created_at: string;
   updated_at: string;
 }

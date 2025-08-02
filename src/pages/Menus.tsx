@@ -256,7 +256,7 @@ export default function Menus() {
                     <SelectContent>
                       {clients.map((client) => (
                         <SelectItem key={client.id} value={client.id}>
-                          {client.name} {client.pet_name && `(${client.pet_name})`}
+                          {client.name} - {client.password}
                         </SelectItem>
                       ))}
                     </SelectContent>

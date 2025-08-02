@@ -43,18 +43,22 @@ export function useClients() {
     fetchClients();
   }, [user]);
 
-  const createClient = async (clientData: Omit<ClientInsert, 'user_id'>) => {
+  const createClient = async (clientData: Omit<ClientInsert, 'user_id' | 'password'>, petName: string) => {
     if (!user) return null;
 
     try {
+      // Gerar senha única baseada no primeiro pet
+      const { data: passwordData, error: passwordError } = await supabase
+        .rpc('generate_client_password', { pet_name: petName });
+
+      if (passwordError) throw passwordError;
+
       const { data, error } = await supabase
         .from('clients')
         .insert([{ 
           ...clientData, 
           user_id: user.id,
-          // Garantir que os novos campos sejam incluídos
-          cpf: clientData.cpf || null,
-          whatsapp: clientData.whatsapp || null
+          password: passwordData
         }])
         .select()
         .single();
@@ -64,7 +68,7 @@ export function useClients() {
       setClients(prev => [data, ...prev]);
       toast({
         title: "Cliente criado!",
-        description: "Cliente adicionado com sucesso.",
+        description: `Cliente criado com sucesso. Senha: ${passwordData}`,
       });
       return data;
     } catch (error) {

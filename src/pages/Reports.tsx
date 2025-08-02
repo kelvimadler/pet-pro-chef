@@ -190,18 +190,9 @@ export default function Reports() {
               <span className="font-medium">{clients.length}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Pets cadastrados:</span>
+              <span className="text-muted-foreground">Clientes ativos:</span>
               <span className="font-medium">
-                {clients.filter(c => c.pet_name).length}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Média de peso:</span>
-              <span className="font-medium">
-                {clients.filter(c => c.pet_weight).length > 0 
-                  ? `${(clients.filter(c => c.pet_weight).reduce((sum, c) => sum + (c.pet_weight || 0), 0) / clients.filter(c => c.pet_weight).length).toFixed(1)}kg`
-                  : "N/A"
-                }
+                {clients.length}
               </span>
             </div>
           </CardContent>
