@@ -218,23 +218,23 @@ export default function Clients() {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      {/* Header - Mobile First */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Gestão de Clientes</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Gestão de Clientes</h1>
+          <p className="text-muted-foreground text-sm sm:text-base mt-1">
             Cadastro e acompanhamento de clientes e pets
           </p>
         </div>
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-primary hover:scale-105 transition-transform shadow-elegant">
+            <Button className="w-full sm:w-auto bg-gradient-primary hover:scale-105 transition-transform shadow-elegant">
               <Plus className="w-4 h-4 mr-2" />
               Novo Cliente
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Novo Cliente</DialogTitle>
             </DialogHeader>
@@ -242,7 +242,7 @@ export default function Clients() {
               {/* Dados do Tutor */}
               <div className="space-y-4">
                 <h3 className="text-lg font-medium text-foreground">Dados do Tutor</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Nome Completo *</Label>
                     <Input
@@ -269,7 +269,7 @@ export default function Clients() {
                     onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="phone">Telefone</Label>
                     <Input
@@ -293,7 +293,7 @@ export default function Clients() {
               {/* Dados do Pet */}
               <div className="space-y-4">
                 <h3 className="text-lg font-medium text-foreground">Dados do Pet</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="petName">Nome do Pet *</Label>
                     <Input
@@ -312,7 +312,7 @@ export default function Clients() {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="petBirthDate">Data de Nascimento</Label>
                     <Input
@@ -333,7 +333,7 @@ export default function Clients() {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="petBreed">Raça</Label>
                     <Input
@@ -420,109 +420,228 @@ export default function Clients() {
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Senha</TableHead>
-                  <TableHead>Pet</TableHead>
-                  <TableHead>Nome do Tutor</TableHead>
-                  <TableHead>Telefone</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Endereço</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Desktop Table - Hidden on Mobile */}
+              <div className="hidden lg:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Senha</TableHead>
+                      <TableHead>Pet</TableHead>
+                      <TableHead>Nome do Tutor</TableHead>
+                      <TableHead>Telefone</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Endereço</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredClients.map((client) => {
+                      const clientPets = getClientPets(client.id);
+                      return (
+                        <TableRow key={client.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <code className="bg-accent px-2 py-1 rounded text-sm font-mono">
+                                {client.password}
+                              </code>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => copyPassword(client.password)}
+                              >
+                                <Copy className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {clientPets.length > 0 ? (
+                              <div className="space-y-1">
+                                <p className="font-medium">{clientPets[0].name}</p>
+                                {clientPets.length > 1 && (
+                                  <p className="text-xs text-muted-foreground">
+                                    +{clientPets.length - 1} pets
+                                  </p>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">Nenhum pet</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="font-medium">{client.name}</TableCell>
+                          <TableCell>{client.phone || '-'}</TableCell>
+                          <TableCell>{client.email || '-'}</TableCell>
+                          <TableCell className="max-w-[200px] truncate">{client.address || '-'}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleView(client)}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(client)}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDelete(client.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Excluir
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile Cards - Visible on Mobile */}
+              <div className="lg:hidden space-y-4">
                 {filteredClients.map((client) => {
                   const clientPets = getClientPets(client.id);
                   return (
-                    <TableRow key={client.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <code className="bg-accent px-2 py-1 rounded text-sm font-mono">
-                            {client.password}
-                          </code>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copyPassword(client.password)}
-                          >
-                            <Copy className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {clientPets.length > 0 ? (
-                          <div className="space-y-1">
-                            <p className="font-medium">{clientPets[0].name}</p>
-                            {clientPets.length > 1 && (
-                              <p className="text-xs text-muted-foreground">
-                                +{clientPets.length - 1} pets
-                              </p>
+                    <Card key={client.id} className="border-border/50 shadow-card-hover">
+                      <CardContent className="p-4">
+                        <div className="space-y-4">
+                          {/* Header with Password and Main Pet */}
+                          <div className="flex items-start justify-between">
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <code className="bg-accent px-2 py-1 rounded text-xs font-mono">
+                                  {client.password}
+                                </code>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => copyPassword(client.password)}
+                                >
+                                  <Copy className="w-3 h-3" />
+                                </Button>
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-foreground">{client.name}</h3>
+                                {clientPets.length > 0 ? (
+                                  <div className="text-sm text-muted-foreground">
+                                    <span className="font-medium">{clientPets[0].name}</span>
+                                    {clientPets.length > 1 && (
+                                      <span> (+{clientPets.length - 1} pets)</span>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="text-sm text-muted-foreground">Nenhum pet</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Contact Info */}
+                          <div className="space-y-1 text-sm">
+                            {client.phone && (
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <span className="font-medium">Tel:</span>
+                                <span>{client.phone}</span>
+                              </div>
+                            )}
+                            {client.email && (
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <span className="font-medium">Email:</span>
+                                <span className="truncate">{client.email}</span>
+                              </div>
+                            )}
+                            {client.address && (
+                              <div className="flex items-start gap-2 text-muted-foreground">
+                                <span className="font-medium">End:</span>
+                                <span className="line-clamp-2">{client.address}</span>
+                              </div>
                             )}
                           </div>
-                        ) : (
-                          <span className="text-muted-foreground">Nenhum pet</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="font-medium">{client.name}</TableCell>
-                      <TableCell>{client.phone || '-'}</TableCell>
-                      <TableCell>{client.email || '-'}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">{client.address || '-'}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleView(client)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEdit(client)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDelete(client.id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
+
+                          {/* Action Buttons */}
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleView(client)}
+                              className="flex-1"
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              Ver
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(client)}
+                              className="flex-1"
+                            >
+                              <Edit className="w-4 h-4 mr-2" />
+                              Editar
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm" className="flex-1">
+                                  <Trash2 className="w-4 h-4 mr-2" />
                                   Excluir
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="w-[95vw] max-w-[400px]">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                                  <AlertDialogCancel className="w-full sm:w-auto">Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDelete(client.id)}
+                                    className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Excluir
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </CardContent>
+                    </Card>
                   );
                 })}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
 
       {/* View Client Dialog */}
       <Dialog open={viewDialog} onOpenChange={setViewDialog}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detalhes do Cliente</DialogTitle>
           </DialogHeader>
@@ -530,7 +649,7 @@ export default function Clients() {
             <div className="space-y-6">
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Dados do Tutor</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Nome</Label>
                     <p className="text-foreground">{selectedClient.name}</p>
@@ -621,7 +740,7 @@ export default function Clients() {
 
       {/* Edit Client Dialog */}
       <Dialog open={editDialog} onOpenChange={setEditDialog}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Cliente</DialogTitle>
           </DialogHeader>
@@ -629,7 +748,7 @@ export default function Clients() {
             {/* Dados do Tutor */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-foreground">Dados do Tutor</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="editName">Nome Completo *</Label>
                   <Input
@@ -656,7 +775,7 @@ export default function Clients() {
                   onChange={(e) => setEditFormData(prev => ({ ...prev, address: e.target.value }))}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="editPhone">Telefone</Label>
                   <Input
